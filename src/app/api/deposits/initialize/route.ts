@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { TransactpayService } from '@/lib/transactpay';
-import { v4 as uuidv4 } from 'uuid';
+// Using native crypto API for UUID generation
 
 export async function POST(request: Request) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Generate unique reference
-    const reference = `DEP-${uuidv4().substring(0, 8).toUpperCase()}`;
+    const reference = `DEP-${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
 
     // Create pending deposit log in database
     const { error: depositError } = await supabase

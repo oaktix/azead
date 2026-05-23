@@ -42,7 +42,14 @@ export default async function DashboardPage() {
     .order('start_date', { ascending: false });
 
   // 4. Fetch recent transactions
-  let transactions: unknown[] = [];
+  interface LedgerTransaction {
+    id: string;
+    amount: number | string;
+    type: string;
+    description?: string;
+    created_at: string;
+  }
+  let transactions: LedgerTransaction[] = [];
   if (wallet) {
     const { data: txs } = await supabase
       .from('wallet_transactions')
@@ -50,7 +57,7 @@ export default async function DashboardPage() {
       .eq('wallet_id', wallet.id)
       .order('created_at', { ascending: false })
       .limit(6);
-    transactions = txs || [];
+    transactions = (txs as LedgerTransaction[]) || [];
   }
 
   // 5. Fetch referral count
