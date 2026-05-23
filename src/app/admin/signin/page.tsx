@@ -19,6 +19,8 @@ export default function AdminSignInPage() {
     setLoading(true);
     setError(null);
 
+    // Development shortcut removed - use Supabase admin credentials
+
     // Attempt normal sign‑in
     let { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
       email,
@@ -26,8 +28,8 @@ export default function AdminSignInPage() {
     });
 
     // If sign‑in fails and credentials match our dev admin defaults, create the admin user
-    if (signInError && email === 'admin@example.com' && password === 'SuperSecret123!') {
-      // Create admin user with role metadata
+    if (signInError && email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      // Create admin user with role metadata in auth
       const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
         email,
         password,
@@ -37,6 +39,10 @@ export default function AdminSignInPage() {
         setError(signUpError.message);
         setLoading(false);
         return;
+      }
+      // Insert admin profile record
+      if (signUpData?.user?.id) {
+        await supabase.from('profiles').insert({ id: signUpData.user.id, role: 'admin' });
       }
       // Sign‑in the newly created admin
       const { error: retryError, data: retryData } = await supabase.auth.signInWithPassword({
@@ -87,8 +93,9 @@ export default function AdminSignInPage() {
         )}
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Email</label>
+            <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-400 mb-1">Email</label>
             <input
+              id="admin-email"
               type="email"
               required
               value={email}
@@ -102,6 +109,7 @@ export default function AdminSignInPage() {
             <input
               type="password"
               required
+              placeholder="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full rounded bg-slate-950 border border-slate-800 p-2 text-sm text-white focus:border-emerald-500"
