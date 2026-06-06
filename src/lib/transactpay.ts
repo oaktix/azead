@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import forge from 'node-forge';
+import { DOMParser } from '@xmldom/xmldom';
 
 interface InitializePaymentParams {
   email: string;
@@ -20,8 +22,53 @@ export interface WebhookPayload {
 }
 
 /**
+ * Encrypts data using RSA public key (PKCS1 v1.5) following the
+ * official Transactpay encryption guide.
+ *
+ * The encryption key is a Base64-encoded string that, once decoded, has
+ * a "4096!" prefix followed by an XML <RSAKeyValue> containing Modulus
+ * and Exponent elements.
+ */
+function encryptPayload(data: object, rsaPubKey: string): string {
+  // 1. Decode the base64-encoded key and strip the "4096!" prefix
+  let rsaKeyValue = Buffer.from(rsaPubKey, 'base64').toString('utf-8');
+  rsaKeyValue = rsaKeyValue.replace('4096!', '');
+
+  // 2. Parse the XML to extract Modulus and Exponent
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(rsaKeyValue, 'text/xml');
+  const modulusB64 = xmlDoc.getElementsByTagName('Modulus')[0]?.textContent;
+  const exponentB64 = xmlDoc.getElementsByTagName('Exponent')[0]?.textContent;
+
+  if (!modulusB64 || !exponentB64) {
+    throw new Error('Invalid encryption key: could not extract RSA Modulus/Exponent');
+  }
+
+  // 3. Convert Modulus and Exponent from base64 → BigInteger
+  const BigInteger = forge.jsbn.BigInteger;
+  const modulusBI = new BigInteger(
+    forge.util.createBuffer(forge.util.decode64(modulusB64)).toHex(),
+    16
+  );
+  const exponentBI = new BigInteger(
+    forge.util.createBuffer(forge.util.decode64(exponentB64)).toHex(),
+    16
+  );
+
+  // 4. Reconstruct the RSA public key
+  const pubKey = forge.pki.setRsaPublicKey(modulusBI, exponentBI);
+
+  // 5. Encrypt the JSON-stringified payload with PKCS1 v1.5
+  const plaintext = JSON.stringify(data);
+  const encryptedBytes = pubKey.encrypt(forge.util.encodeUtf8(plaintext));
+
+  // 6. Return as Base64
+  return Buffer.from(encryptedBytes, 'binary').toString('base64');
+}
+
+/**
  * Utility to integrate with Transactpay payment flows.
- * Docs: https://payment-api-service.transactpay.ai
+ * Docs: https://transactpay.readme.io/reference/encryption
  */
 export class TransactpayService {
   private static API_URL = 'https://payment-api-service.transactpay.ai';
@@ -29,6 +76,12 @@ export class TransactpayService {
   /**
    * Creates an order on Transactpay and returns the checkout URL
    * that the user should be redirected to.
+   *
+   * Flow:
+   *  1. Build the order payload
+   *  2. RSA-encrypt it using the public encryption key
+   *  3. POST { data: "<encrypted_base64>" } to /payment/order/create
+   *  4. Extract checkout_url from the response
    */
   static async initializePayment({ email, amount, reference }: InitializePaymentParams): Promise<string> {
     const publicKey = process.env.TRANSACTPAY_PUBLIC_KEY;
@@ -68,14 +121,17 @@ export class TransactpayService {
     };
 
     try {
+      // RSA-encrypt the entire payload
+      const encryptedData = encryptPayload(payload, encryptionKey);
+
       const response = await fetch(`${this.API_URL}/payment/order/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'api-key': publicKey,
-          'encryption-key': encryptionKey,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ data: encryptedData }),
       });
 
       const resData = await response.json();
