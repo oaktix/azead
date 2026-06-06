@@ -67,7 +67,7 @@ function encryptPayload(data: object, rsaPubKey: string): string {
         throw new Error(msg);
       }
     }
-  } as any);
+  } as unknown as { onError: (level: string, msg: string) => void });
   
   const xmlDoc = parser.parseFromString(rsaKeyValue, 'text/xml');
   const modulusB64 = xmlDoc.getElementsByTagName('Modulus')[0]?.textContent;
