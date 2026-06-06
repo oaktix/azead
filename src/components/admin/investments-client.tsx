@@ -228,8 +228,8 @@ export default function InvestmentsClient({
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">User Investments</h1>
-          <p className="text-xs text-slate-400 mt-1">Audit, edit parameters, delete, or manually create investment subscriptions for users.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">User Investments</h1>
+          <p className="text-xs text-muted mt-1">Audit, edit parameters, delete, or manually create investment subscriptions for users.</p>
         </div>
 
         <button 
@@ -242,7 +242,7 @@ export default function InvestmentsClient({
       </div>
 
       {/* Filter and search bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-md">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-card border border-border shadow-md">
         <div className="relative md:col-span-3">
           <Search className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
           <input 
@@ -250,7 +250,7 @@ export default function InvestmentsClient({
             placeholder="Search by name, email, package..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-input border border-border rounded-xl pl-10 pr-4 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
           />
         </div>
 
@@ -259,7 +259,7 @@ export default function InvestmentsClient({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             title="Filter by status"
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -271,13 +271,13 @@ export default function InvestmentsClient({
       </div>
 
       {/* Investments Table */}
-      <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl overflow-x-auto">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-xl overflow-x-auto">
         {filteredInvestments.length === 0 ? (
-          <p className="text-xs text-slate-500 text-center py-8">No investment records found.</p>
+          <p className="text-xs text-muted text-center py-8">No investment records found.</p>
         ) : (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="text-slate-500 border-b border-slate-900 pb-2">
+              <tr className="text-muted border-b border-border pb-2">
                 <th className="pb-3">Investor</th>
                 <th className="pb-3">Package / Amount</th>
                 <th className="pb-3">Progress / Yield</th>
@@ -286,30 +286,30 @@ export default function InvestmentsClient({
                 <th className="pb-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-900">
+            <tbody className="divide-y divide-border">
               {filteredInvestments.map((inv) => {
                 const progress = calculateProgress(inv.start_date, inv.maturity_date, inv.status);
                 
                 return (
-                  <tr key={inv.id} className="align-middle hover:bg-slate-950/20 transition-colors">
+                  <tr key={inv.id} className="align-middle hover:bg-muted/10 transition-colors">
                     <td className="py-4">
-                      <div className="font-bold text-slate-200">
+                      <div className="font-bold text-foreground">
                         {inv.profiles?.first_name} {inv.profiles?.last_name}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">{inv.user_email}</div>
+                      <div className="text-[10px] text-muted font-mono mt-0.5">{inv.user_email}</div>
                     </td>
                     <td className="py-4">
-                      <div className="font-bold text-slate-300 flex items-center gap-1.5">
+                      <div className="font-bold text-foreground flex items-center gap-1.5">
                         <Coins className="w-3.5 h-3.5 text-emerald-400" />
                         <span>{inv.investment_packages?.name || 'Manual Offer'}</span>
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">{formatNaira(inv.amount)}</div>
+                      <div className="text-[10px] text-muted font-mono mt-0.5">{formatNaira(inv.amount)}</div>
                     </td>
                     <td className="py-4">
                       <div className="flex items-center gap-2">
                         <progress 
                           title="Maturity Progress"
-                          className={`w-20 h-1.5 rounded-full overflow-hidden border border-slate-900 [&::-webkit-progress-bar]:bg-slate-950 [&::-moz-progress-bar]:bg-emerald-400 ${
+                          className={`w-20 h-1.5 rounded-full overflow-hidden border border-border [&::-webkit-progress-bar]:bg-input [&::-moz-progress-bar]:bg-emerald-400 ${
                             inv.status === 'completed' 
                               ? '[&::-webkit-progress-value]:bg-emerald-500' 
                               : '[&::-webkit-progress-value]:bg-emerald-400'
@@ -317,18 +317,18 @@ export default function InvestmentsClient({
                           value={progress} 
                           max="100"
                         />
-                        <span className="font-mono text-[9px] text-slate-400">{progress}%</span>
+                        <span className="font-mono text-[9px] text-muted">{progress}%</span>
                       </div>
                       <span className="text-[9px] text-emerald-400 block mt-1 font-semibold">
                         Yield: {formatNaira(inv.accrued_interest)} ({inv.interest_rate}%)
                       </span>
                     </td>
                     <td className="py-4">
-                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                      <div className="flex items-center gap-1 text-[10px] text-muted font-medium">
                         <Calendar className="w-3 h-3 text-slate-500" />
                         <span>S: {new Date(inv.start_date).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium mt-0.5">
+                      <div className="flex items-center gap-1 text-[10px] text-muted font-medium mt-0.5">
                         <Calendar className="w-3 h-3 text-emerald-500" />
                         <span>M: {new Date(inv.maturity_date).toLocaleDateString()}</span>
                       </div>
@@ -336,10 +336,10 @@ export default function InvestmentsClient({
                     <td className="py-4">
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                         inv.status === 'active'
-                          ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-400'
+                          ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                           : inv.status === 'completed'
-                          ? 'bg-blue-950/40 border border-blue-500/20 text-blue-400'
-                          : 'bg-red-950/40 border border-red-500/20 text-red-400'
+                          ? 'bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400'
+                          : 'bg-destructive/10 border border-destructive/20 text-destructive'
                       }`}>
                         {inv.status === 'early_termination_pending' ? 'Maturity Pending' : inv.status}
                       </span>
@@ -357,14 +357,14 @@ export default function InvestmentsClient({
                             setIsEditOpen(true);
                           }}
                           title="Edit investment parameters"
-                          className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all"
+                          className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-all"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={() => handleDeleteInvestment(inv.id)}
                           title="Delete investment record"
-                          className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
+                          className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-destructive hover:border-destructive/30 transition-all"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -381,29 +381,29 @@ export default function InvestmentsClient({
       {/* Modal: Create Manual Investment */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button 
               onClick={() => setIsCreateOpen(false)}
               title="Close modal"
-              className="absolute top-4 right-4 p-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Manual Investment Allocation</h3>
-              <p className="text-xs text-slate-400 mt-1">Manually subscribe a user to an active package offering.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Manual Investment Allocation</h3>
+              <p className="text-xs text-muted mt-1">Manually subscribe a user to an active package offering.</p>
             </div>
 
             <form onSubmit={handleCreateInvestment} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select User Account</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Select User Account</label>
                 <select 
                   required
                   value={createForm.userId}
                   onChange={(e) => setCreateForm({ ...createForm, userId: e.target.value })}
                   title="Select user account"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="">-- Choose User --</option>
                   {profiles.map((p) => (
@@ -415,13 +415,13 @@ export default function InvestmentsClient({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select Package Offering</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Select Package Offering</label>
                 <select 
                   required
                   value={createForm.packageId}
                   onChange={(e) => handlePackageChange(e.target.value)}
                   title="Select package offering"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="">-- Choose Package --</option>
                   {packages.map((pkg) => (
@@ -433,25 +433,25 @@ export default function InvestmentsClient({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Capital Amount (NGN)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Capital Amount (NGN)</label>
                 <input 
                   type="number" 
                   required
                   min={1}
                   value={createForm.amount}
                   onChange={(e) => setCreateForm({ ...createForm, amount: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   placeholder="Subscription price"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Initial Status</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Initial Status</label>
                 <select 
                   value={createForm.status}
                   onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
                   title="Initial status"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="active">Active (Accruing yield)</option>
                   <option value="completed">Completed (Matured)</option>
@@ -459,15 +459,15 @@ export default function InvestmentsClient({
                 </select>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-900 rounded-xl">
+              <div className="flex items-center space-x-3 p-3 bg-input border border-border rounded-xl">
                 <input 
                   type="checkbox" 
                   id="create-reinvest"
                   checked={createForm.auto_reinvest}
                   onChange={(e) => setCreateForm({ ...createForm, auto_reinvest: e.target.checked })}
-                  className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 w-4 h-4"
+                  className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
                 />
-                <label htmlFor="create-reinvest" className="text-xs text-slate-300 font-semibold select-none cursor-pointer">
+                <label htmlFor="create-reinvest" className="text-xs text-foreground font-semibold select-none cursor-pointer">
                   Enable auto-reinvest at maturity
                 </label>
               </div>
@@ -488,33 +488,33 @@ export default function InvestmentsClient({
       {/* Modal: Edit Investment */}
       {isEditOpen && selectedInv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button 
               onClick={() => {
                 setIsEditOpen(false);
                 setSelectedInv(null);
               }}
               title="Close modal"
-              className="absolute top-4 right-4 p-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Edit Investment Parameters</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Edit yields and status terms for <span className="font-semibold text-white">{selectedInv.profiles?.first_name}&apos;s</span> subscription.
+              <h3 className="text-lg font-bold text-foreground font-heading">Edit Investment Parameters</h3>
+              <p className="text-xs text-muted mt-1">
+                Edit yields and status terms for <span className="font-semibold text-foreground">{selectedInv.profiles?.first_name}&apos;s</span> subscription.
               </p>
             </div>
 
             <form onSubmit={handleEditInvestment} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Status</label>
                 <select 
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value as InvestmentItem['status'] })}
                   title="Status"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="active">Active</option>
                   <option value="completed">Completed</option>
@@ -524,7 +524,7 @@ export default function InvestmentsClient({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Accrued Yield Interest (NGN)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Accrued Yield Interest (NGN)</label>
                 <input 
                   type="number" 
                   required
@@ -534,19 +534,19 @@ export default function InvestmentsClient({
                   onChange={(e) => setEditForm({ ...editForm, accrued_interest: e.target.value })}
                   title="Accrued Yield Interest"
                   placeholder="0.0000"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-900 rounded-xl">
+              <div className="flex items-center space-x-3 p-3 bg-input border border-border rounded-xl">
                 <input 
                   type="checkbox" 
                   id="edit-reinvest"
                   checked={editForm.auto_reinvest}
                   onChange={(e) => setEditForm({ ...editForm, auto_reinvest: e.target.checked })}
-                  className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 w-4 h-4"
+                  className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
                 />
-                <label htmlFor="edit-reinvest" className="text-xs text-slate-300 font-semibold select-none cursor-pointer">
+                <label htmlFor="edit-reinvest" className="text-xs text-foreground font-semibold select-none cursor-pointer">
                   Auto reinvest at maturity
                 </label>
               </div>

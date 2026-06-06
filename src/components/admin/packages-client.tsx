@@ -159,8 +159,8 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">Investment Packages</h1>
-          <p className="text-xs text-slate-400 mt-1">Configure and release investment packages for normal users to subscribe to.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Investment Packages</h1>
+          <p className="text-xs text-muted mt-1">Configure and release investment packages for normal users to subscribe to.</p>
         </div>
 
         <button 
@@ -174,24 +174,24 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div className="p-4 rounded-xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Total Packages</span>
-          <div className="text-xl font-bold text-slate-200 mt-1">{initialPackages.length}</div>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Total Packages</span>
+          <div className="text-xl font-bold text-foreground mt-1">{initialPackages.length}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active Offerings</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Active Offerings</span>
           <div className="text-xl font-bold text-emerald-400 mt-1">{initialPackages.filter(p => p.is_active).length}</div>
         </div>
       </div>
 
       {/* Package listings */}
-      <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl overflow-x-auto">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-xl overflow-x-auto">
         {initialPackages.length === 0 ? (
-          <p className="text-xs text-slate-500 text-center py-8">No investment packages configured yet.</p>
+          <p className="text-xs text-muted text-center py-8">No investment packages configured yet.</p>
         ) : (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="text-slate-500 border-b border-slate-900 pb-2">
+              <tr className="text-muted border-b border-border pb-2">
                 <th className="pb-3">Package name</th>
                 <th className="pb-3">Subscription Amount</th>
                 <th className="pb-3">Annual Interest</th>
@@ -200,27 +200,27 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                 <th className="pb-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-900">
+            <tbody className="divide-y divide-border">
               {initialPackages.map((p) => (
-                <tr key={p.id} className="align-middle hover:bg-slate-950/20 transition-colors">
-                  <td className="py-4 font-bold text-slate-200 flex items-center gap-2">
+                <tr key={p.id} className="align-middle hover:bg-muted/10 transition-colors">
+                  <td className="py-4 font-bold text-foreground flex items-center gap-2">
                     <Tag className="w-3.5 h-3.5 text-emerald-400" />
                     <span>{p.name}</span>
                   </td>
-                  <td className="py-4 font-mono font-semibold text-slate-300">
+                  <td className="py-4 font-mono font-semibold text-foreground">
                     {formatNaira(p.amount)}
                   </td>
                   <td className="py-4 font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
                     <Percent className="w-3 h-3" /> {p.annual_interest_rate}%
                   </td>
-                  <td className="py-4 font-semibold text-slate-400 flex items-center gap-1">
+                  <td className="py-4 font-semibold text-muted flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" /> {p.duration_days} Days
                   </td>
                   <td className="py-4">
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase flex items-center gap-1 w-fit ${
                       p.is_active 
                         ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-400' 
-                        : 'bg-slate-900 border border-slate-800 text-slate-500'
+                        : 'bg-input border border-border text-muted'
                     }`}>
                       {p.is_active ? (
                         <>
@@ -250,14 +250,14 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                           setIsEditOpen(true);
                         }}
                         title="Edit Package"
-                        className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all"
+                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-all"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button 
                         onClick={() => handleDeletePackage(p.id, p.name)}
                         title="Delete Package"
-                        className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
+                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-destructive hover:border-destructive/30 transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -273,36 +273,36 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
       {/* Modal: Create Package */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button 
               onClick={() => setIsCreateOpen(false)}
               title="Close modal"
-              className="absolute top-4 right-4 p-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Create Package Offer</h3>
-              <p className="text-xs text-slate-400 mt-1">Configure subscription cost, return rate, and maturation cycles.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Create Package Offer</h3>
+              <p className="text-xs text-muted mt-1">Configure subscription cost, return rate, and maturation cycles.</p>
             </div>
 
             <form onSubmit={handleCreatePackage} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Package Name</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Package Name</label>
                 <input 
                   type="text" 
                   required
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                   title="Package Name"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   placeholder="e.g. VIP Plus"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
                 <input 
                   type="number" 
                   required
@@ -310,14 +310,14 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                   value={createForm.amount}
                   onChange={(e) => setCreateForm({ ...createForm, amount: e.target.value })}
                   title="Subscription Price"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   placeholder="250000"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Annual Interest (%)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Annual Interest (%)</label>
                   <input 
                     type="number" 
                     required
@@ -326,12 +326,12 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                     value={createForm.annual_interest_rate}
                     onChange={(e) => setCreateForm({ ...createForm, annual_interest_rate: e.target.value })}
                     title="Annual Interest Percentage"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                     placeholder="25.00"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Duration (Days)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Duration (Days)</label>
                   <input 
                     type="number" 
                     required
@@ -339,21 +339,21 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                     value={createForm.duration_days}
                     onChange={(e) => setCreateForm({ ...createForm, duration_days: e.target.value })}
                     title="Duration in Days"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                     placeholder="365"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-900 rounded-xl">
+              <div className="flex items-center space-x-3 p-3 bg-input border border-border rounded-xl">
                 <input 
                   type="checkbox" 
                   id="create-active"
                   checked={createForm.is_active}
                   onChange={(e) => setCreateForm({ ...createForm, is_active: e.target.checked })}
-                  className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 w-4 h-4"
+                  className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
                 />
-                <label htmlFor="create-active" className="text-xs text-slate-300 font-semibold select-none cursor-pointer">
+                <label htmlFor="create-active" className="text-xs text-foreground font-semibold select-none cursor-pointer">
                   Activate Package (Visible to users)
                 </label>
               </div>
@@ -374,38 +374,38 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
       {/* Modal: Edit Package */}
       {isEditOpen && selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button 
               onClick={() => {
                 setIsEditOpen(false);
                 setSelectedPackage(null);
               }}
               title="Close modal"
-              className="absolute top-4 right-4 p-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Edit Package Details</h3>
-              <p className="text-xs text-slate-400 mt-1">Modify configuration parameters for `{selectedPackage.name}`.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Edit Package Details</h3>
+              <p className="text-xs text-muted mt-1">Modify configuration parameters for `{selectedPackage.name}`.</p>
             </div>
 
             <form onSubmit={handleEditPackage} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Package Name</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Package Name</label>
                 <input 
                   type="text" 
                   required
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   title="Package Name"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
                 <input 
                   type="number" 
                   required
@@ -413,13 +413,13 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                   value={editForm.amount}
                   onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
                   title="Subscription Price"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Annual Interest (%)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Annual Interest (%)</label>
                   <input 
                     type="number" 
                     required
@@ -428,11 +428,11 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                     value={editForm.annual_interest_rate}
                     onChange={(e) => setEditForm({ ...editForm, annual_interest_rate: e.target.value })}
                     title="Annual Interest Percentage"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Duration (Days)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Duration (Days)</label>
                   <input 
                     type="number" 
                     required
@@ -440,20 +440,20 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                     value={editForm.duration_days}
                     onChange={(e) => setEditForm({ ...editForm, duration_days: e.target.value })}
                     title="Duration in Days"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-900 rounded-xl">
+              <div className="flex items-center space-x-3 p-3 bg-input border border-border rounded-xl">
                 <input 
                   type="checkbox" 
                   id="edit-active"
                   checked={editForm.is_active}
                   onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
-                  className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 w-4 h-4"
+                  className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
                 />
-                <label htmlFor="edit-active" className="text-xs text-slate-300 font-semibold select-none cursor-pointer">
+                <label htmlFor="edit-active" className="text-xs text-foreground font-semibold select-none cursor-pointer">
                   Activate Package (Visible to users)
                 </label>
               </div>

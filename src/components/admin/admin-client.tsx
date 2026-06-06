@@ -107,8 +107,8 @@ export default function AdminClient({
       {/* Header titles */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">Control Overview</h1>
-          <p className="text-xs text-slate-400 mt-1">Platform liquidity monitoring, system controls, and recent audits.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Control Overview</h1>
+          <p className="text-xs text-muted mt-1">Platform liquidity monitoring, system controls, and recent audits.</p>
         </div>
 
         {/* Live Fail-Safe Status indicator */}
@@ -126,38 +126,38 @@ export default function AdminClient({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-lg relative overflow-hidden group hover:border-slate-800 transition-colors">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-lg relative overflow-hidden group hover:border-border transition-colors">
+          <div className="text-[10px] font-bold text-muted uppercase tracking-wider flex items-center justify-between">
             <span>Platform Deposits</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <div className="text-xl sm:text-2xl font-extrabold text-white font-mono mt-1.5">{formatNaira(metrics.totalDeposits).replace('.00', '')}</div>
+          <div className="text-xl sm:text-2xl font-extrabold text-foreground font-mono mt-1.5">{formatNaira(metrics.totalDeposits).replace('.00', '')}</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-lg relative overflow-hidden group hover:border-slate-800 transition-colors">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-lg relative overflow-hidden group hover:border-border transition-colors">
+          <div className="text-[10px] font-bold text-muted uppercase tracking-wider flex items-center justify-between">
             <span>Platform Payouts</span>
             <ArrowDownRight className="w-3.5 h-3.5 text-red-400" />
           </div>
-          <div className="text-xl sm:text-2xl font-extrabold text-white font-mono mt-1.5">{formatNaira(metrics.totalWithdrawals).replace('.00', '')}</div>
+          <div className="text-xl sm:text-2xl font-extrabold text-foreground font-mono mt-1.5">{formatNaira(metrics.totalWithdrawals).replace('.00', '')}</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-lg relative overflow-hidden group hover:border-slate-800 transition-colors">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-lg relative overflow-hidden group hover:border-border transition-colors">
+          <div className="text-[10px] font-bold text-muted uppercase tracking-wider flex items-center justify-between">
             <span>Active Assets (AUM)</span>
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
           </div>
           <div className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono mt-1.5">{formatNaira(metrics.activeInvestmentsSum).replace('.00', '')}</div>
-          <span className="text-[8px] text-slate-500 block mt-1">{metrics.activeInvestmentsCount} active holdings</span>
+          <span className="text-[8px] text-muted block mt-1">{metrics.activeInvestmentsCount} active holdings</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-lg relative overflow-hidden group hover:border-slate-800 transition-colors">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-lg relative overflow-hidden group hover:border-border transition-colors">
+          <div className="text-[10px] font-bold text-muted uppercase tracking-wider flex items-center justify-between">
             <span>Action Items</span>
             <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
           </div>
           <div className="text-xl sm:text-2xl font-extrabold text-amber-500 font-mono mt-1.5">{metrics.pendingKycCount + metrics.pendingWithdrawalsCount} Items</div>
-          <span className="text-[8px] text-slate-500 block mt-1">{metrics.pendingKycCount} KYC • {metrics.pendingWithdrawalsCount} Withdrawals</span>
+          <span className="text-[8px] text-muted block mt-1">{metrics.pendingKycCount} KYC • {metrics.pendingWithdrawalsCount} Withdrawals</span>
         </div>
       </div>
 
@@ -165,18 +165,18 @@ export default function AdminClient({
       <div className="grid lg:grid-cols-5 gap-8">
         {/* Left Side: Panic Switch & Manual Cron */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl space-y-6">
-            <h4 className="text-sm font-bold text-white font-heading flex items-center gap-2">
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-xl space-y-6">
+            <h4 className="text-sm font-bold text-foreground font-heading flex items-center gap-2">
               <Sliders className="w-4 h-4 text-emerald-400" />
               <span>Platform Controls</span>
             </h4>
 
             {/* Panic Switch */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 space-y-3">
+            <div className="p-4 rounded-xl bg-input border border-border space-y-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-xs font-bold text-slate-200">Panic Button Pause</span>
-                  <p className="text-[9px] text-slate-500 mt-0.5">Freezes user checkout and withdrawal submissions</p>
+                  <span className="text-xs font-bold text-foreground">Panic Button Pause</span>
+                  <p className="text-[9px] text-muted mt-0.5">Freezes user checkout and withdrawal submissions</p>
                 </div>
                 <button
                   onClick={handleTogglePanicButton}
@@ -184,7 +184,7 @@ export default function AdminClient({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     panicState 
                       ? 'bg-red-500 text-slate-950 hover:bg-red-600' 
-                      : 'bg-slate-900 border border-slate-800 text-red-400 hover:bg-red-950/30'
+                      : 'bg-card border border-border text-red-400 hover:bg-red-950/30'
                   }`}
                 >
                   {panicLoading ? 'Updating...' : panicState ? 'Unpause System' : 'ACTIVATE PAUSE'}
@@ -193,10 +193,10 @@ export default function AdminClient({
             </div>
 
             {/* Maturity Manual Audit trigger */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 space-y-3">
+            <div className="p-4 rounded-xl bg-input border border-border space-y-3">
               <div>
-                <span className="text-xs font-bold text-slate-200">Audit Maturing Positions</span>
-                <p className="text-[9px] text-slate-500 mt-0.5">Executes maturity logic payout calculations for active positions</p>
+                <span className="text-xs font-bold text-foreground">Audit Maturing Positions</span>
+                <p className="text-[9px] text-muted mt-0.5">Executes maturity logic payout calculations for active positions</p>
               </div>
               <button
                 onClick={handleRunCron}
@@ -207,7 +207,7 @@ export default function AdminClient({
                 <span>Trigger Maturity Cron</span>
               </button>
               {cronResult && (
-                <div className="p-2 rounded bg-slate-900 text-[10px] text-emerald-400 font-mono text-center">
+                <div className="p-2 rounded bg-card border border-border text-[10px] text-emerald-400 font-mono text-center">
                   {cronResult}
                 </div>
               )}
@@ -217,22 +217,22 @@ export default function AdminClient({
 
         {/* Right Side: Audit Logs */}
         <div className="lg:col-span-3 space-y-4">
-          <h3 className="text-sm font-bold text-white font-heading px-1 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-foreground font-heading px-1 flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-400" />
             <span>Admin Operation Audits</span>
           </h3>
-          <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl max-h-[350px] overflow-y-auto space-y-4">
+          <div className="p-5 rounded-2xl bg-card border border-border shadow-xl max-h-[350px] overflow-y-auto space-y-4">
             {auditLogs.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">No audit records found.</p>
+              <p className="text-xs text-muted text-center py-6">No audit records found.</p>
             ) : (
-              <div className="space-y-3 divide-y divide-slate-900 text-[10px]">
+              <div className="space-y-3 divide-y divide-border text-[10px]">
                 {auditLogs.map((log, idx) => (
                   <div key={log.id} className={`space-y-1 ${idx > 0 ? 'pt-3' : ''}`}>
-                    <div className="flex justify-between font-mono text-[9px] text-slate-500">
+                    <div className="flex justify-between font-mono text-[9px] text-muted">
                       <span>Op: {log.action}</span>
                       <span>{new Date(log.created_at).toLocaleString()}</span>
                     </div>
-                    <p className="text-slate-300 font-mono text-[9px] leading-normal break-all">
+                    <p className="text-foreground font-mono text-[9px] leading-normal break-all">
                       {JSON.stringify(log.details)}
                     </p>
                   </div>

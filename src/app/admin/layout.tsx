@@ -30,15 +30,15 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Header Command bar */}
-      <header className="h-20 bg-[#0b0f19] border-b border-slate-900 sticky top-0 z-40 flex justify-between items-center px-4 sm:px-8 flex-shrink-0">
+      <header className="h-20 bg-card border-b border-border sticky top-0 z-40 flex justify-between items-center px-4 sm:px-8 flex-shrink-0">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-lg shadow-red-500/5">
             <ShieldAlert className="w-5 h-5 text-red-400" />
           </div>
           <div>
-            <span className="text-lg font-bold tracking-tight text-white font-heading">
+            <span className="text-lg font-bold tracking-tight text-foreground font-heading">
               AZEAD CONTROL
             </span>
             <span className="hidden sm:inline-block ml-2.5 text-[9px] font-bold bg-red-500 text-slate-950 px-1.5 py-0.5 rounded uppercase">Security Core</span>
@@ -46,11 +46,11 @@ export default async function AdminLayout({
         </div>
 
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard" className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-colors">
+          <Link href="/dashboard" className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-input border border-border text-foreground hover:bg-card transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span>User Dashboard</span>
           </Link>
-          <a title="Sign out" aria-label="Sign out" href="/auth/signout" className="p-2 rounded-lg bg-red-950/20 text-red-400 hover:text-red-300 transition-colors">
+          <a title="Sign out" aria-label="Sign out" href="/auth/signout" className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
             <LogOut className="w-4 h-4" />
             <span className="sr-only">Sign out</span>
           </a>

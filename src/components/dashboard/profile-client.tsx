@@ -246,7 +246,7 @@ export default function ProfileClient({
             </div>
 
             {/* KYC status blocks */}
-            {profile.kyc_status === 'verified' && (
+            {profile.kyc_status === 'verified' && kycDoc && (
               <div className="p-4 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/30 text-emerald-750 dark:text-emerald-400 text-xs flex items-start space-x-2.5">
                 <ShieldCheck className="w-5 h-5 flex-shrink-0" />
                 <div>
@@ -256,7 +256,7 @@ export default function ProfileClient({
               </div>
             )}
 
-            {profile.kyc_status === 'pending' && (
+            {profile.kyc_status === 'pending' && kycDoc && (
               <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/30 text-amber-800 dark:text-amber-400 text-xs flex items-start space-x-2.5">
                 <Clock className="w-5 h-5 flex-shrink-0" />
                 <div>
@@ -278,8 +278,8 @@ export default function ProfileClient({
               </div>
             )}
 
-            {/* Upload trigger if not verified and not pending */}
-            {(profile.kyc_status === 'pending' || profile.kyc_status === 'verified') ? (
+            {/* Upload trigger if not verified and not pending, OR if no document exists yet */}
+            {((profile.kyc_status === 'pending' || profile.kyc_status === 'verified') && kycDoc) ? (
               <div className="p-4 rounded-xl bg-muted/10 border border-border font-mono text-[10px] space-y-2 text-muted">
                 <div className="flex justify-between">
                   <span>ID Number on file:</span>

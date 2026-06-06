@@ -251,26 +251,26 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Members</span>
-          <div className="text-2xl font-extrabold text-white font-mono mt-1">{stats.total}</div>
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">Total Members</span>
+          <div className="text-2xl font-extrabold text-foreground font-mono mt-1">{stats.total}</div>
         </div>
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Staff / Admins</span>
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">Staff / Admins</span>
           <div className="text-2xl font-extrabold text-emerald-400 font-mono mt-1">{stats.staff}</div>
         </div>
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Wallet Balances</span>
-          <div className="text-2xl font-extrabold text-white font-mono mt-1">{formatNaira(stats.totalBalances).replace('.00', '')}</div>
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">Total Wallet Balances</span>
+          <div className="text-2xl font-extrabold text-foreground font-mono mt-1">{formatNaira(stats.totalBalances).replace('.00', '')}</div>
         </div>
-        <div className="p-5 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-md">
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Pending KYC Checks</span>
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-md">
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">Pending KYC Checks</span>
           <div className="text-2xl font-extrabold text-amber-500 font-mono mt-1">{stats.pendingKyc}</div>
         </div>
       </div>
 
       {/* Filter and Search controls */}
-      <div className="p-4 rounded-2xl bg-[#0b0f19] border border-slate-900 flex flex-col md:flex-row gap-4 items-center justify-between shadow-md">
+      <div className="p-4 rounded-2xl bg-card border border-border flex flex-col md:flex-row gap-4 items-center justify-between shadow-md">
         {/* Search */}
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
@@ -279,13 +279,13 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             placeholder="Search by name, email, referral code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-input border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center space-x-2 text-slate-400 text-xs">
+          <div className="flex items-center space-x-2 text-muted text-xs">
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters:</span>
           </div>
@@ -295,7 +295,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             title="Filter by Role"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
+            className="bg-input border border-border text-xs text-foreground rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
           >
             <option value="all">All Roles</option>
             <option value="user">Investors (Users)</option>
@@ -307,7 +307,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             title="Filter by KYC Status"
             value={kycFilter}
             onChange={(e) => setKycFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
+            className="bg-input border border-border text-xs text-foreground rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
           >
             <option value="all">All KYC Statuses</option>
             <option value="pending">Pending</option>
@@ -318,13 +318,13 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       </div>
 
       {/* Users table */}
-      <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl overflow-x-auto">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-xl overflow-x-auto">
         {filteredUsers.length === 0 ? (
-          <p className="text-xs text-slate-500 text-center py-8">No matching user records found.</p>
+          <p className="text-xs text-muted text-center py-8">No matching user records found.</p>
         ) : (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="text-slate-500 border-b border-slate-900 pb-2">
+              <tr className="text-muted border-b border-border pb-2">
                 <th className="pb-3 pr-2">User / Email</th>
                 <th className="pb-3">Phone</th>
                 <th className="pb-3">Role</th>
@@ -335,24 +335,24 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                 <th className="pb-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-900">
+            <tbody className="divide-y divide-border">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="align-middle hover:bg-slate-950/20 transition-colors">
+                <tr key={user.id} className="align-middle hover:bg-muted/10 transition-colors">
                   {/* Name and email */}
                   <td className="py-4 pr-2">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-emerald-400 text-xs flex-shrink-0 uppercase">
+                      <div className="w-8 h-8 rounded-full bg-input border border-border flex items-center justify-center font-bold text-emerald-400 text-xs flex-shrink-0 uppercase">
                         {user.first_name[0]}{user.last_name[0]}
                       </div>
                       <div className="min-w-0">
-                        <span className="block font-bold text-slate-200 truncate">{user.first_name} {user.last_name}</span>
-                        <span className="block text-[10px] text-slate-500 truncate">{user.email}</span>
+                        <span className="block font-bold text-foreground truncate">{user.first_name} {user.last_name}</span>
+                        <span className="block text-[10px] text-muted truncate">{user.email}</span>
                       </div>
                     </div>
                   </td>
 
                   {/* Phone */}
-                  <td className="py-4 text-slate-300 font-mono">
+                  <td className="py-4 text-foreground font-mono">
                     {user.phone || <span className="text-slate-600">—</span>}
                   </td>
 
@@ -361,7 +361,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                       user.role === 'admin' 
                         ? 'bg-purple-950/40 border border-purple-500/20 text-purple-400' 
-                        : 'bg-slate-900 border border-slate-850 text-slate-400'
+                        : 'bg-input border border-border text-muted'
                     }`}>
                       {user.role}
                     </span>
@@ -371,10 +371,10 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                   <td className="py-4">
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase flex items-center gap-1 w-fit ${
                       user.kyc_status === 'verified' 
-                        ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-400'
+                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                         : user.kyc_status === 'rejected'
-                        ? 'bg-red-950/40 border border-red-500/20 text-red-400'
-                        : 'bg-amber-950/40 border border-amber-500/20 text-amber-400'
+                        ? 'bg-destructive/10 border border-destructive/20 text-destructive'
+                        : 'bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400'
                     }`}>
                       {user.kyc_status === 'verified' ? <UserCheck className="w-2.5 h-2.5" /> : <UserX className="w-2.5 h-2.5" />}
                       <span>{user.kyc_status}</span>
@@ -382,18 +382,18 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                   </td>
 
                   {/* Referral code */}
-                  <td className="py-4 font-mono text-slate-400">
-                    <span className="block text-slate-300 font-bold">{user.referral_code}</span>
-                    {user.referred_by && <span className="block text-[8px] text-slate-500">Referred</span>}
+                  <td className="py-4 font-mono text-muted">
+                    <span className="block text-foreground font-bold">{user.referral_code}</span>
+                    {user.referred_by && <span className="block text-[8px] text-muted">Referred</span>}
                   </td>
 
                   {/* Balance */}
-                  <td className="py-4 font-mono font-semibold text-slate-200">
+                  <td className="py-4 font-mono font-semibold text-foreground">
                     {formatNaira(user.balance)}
                   </td>
 
                   {/* Created At */}
-                  <td className="py-4 text-slate-400">
+                  <td className="py-4 text-muted">
                     {formatDate(user.created_at)}
                   </td>
 
@@ -408,7 +408,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                           setIsWalletOpen(true);
                         }}
                         title="Adjust Wallet Balance"
-                        className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all"
+                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-emerald-400 hover:border-emerald-500/30 transition-all"
                       >
                         <Wallet className="w-3.5 h-3.5" />
                       </button>
@@ -427,7 +427,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                           setIsEditOpen(true);
                         }}
                         title="Edit User Profile"
-                        className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all"
+                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-all"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
@@ -436,7 +436,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                       <button 
                         onClick={() => handleDeleteUser(user)}
                         title="Delete User Account"
-                        className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
+                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-destructive hover:border-destructive/30 transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -452,24 +452,24 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       {/* Modal: Add User / Staff */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
             <button 
               onClick={() => setIsAddOpen(false)}
               title="Close Modal"
-              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Register User or Staff</h3>
-              <p className="text-xs text-slate-400 mt-1">Create a new auth user and setup role configurations.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Register User or Staff</h3>
+              <p className="text-xs text-muted mt-1">Create a new auth user and setup role configurations.</p>
             </div>
 
             <form onSubmit={handleAddUser} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">First Name</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">First Name</label>
                   <div className="relative">
                     <User className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500" />
                     <input 
@@ -478,13 +478,13 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                       value={addForm.first_name}
                       onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })}
                       title="First Name"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-input border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                       placeholder="e.g. John"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Last Name</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Last Name</label>
                   <div className="relative">
                     <User className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500" />
                     <input 
@@ -493,7 +493,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                       value={addForm.last_name}
                       onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })}
                       title="Last Name"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-input border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                       placeholder="e.g. Doe"
                     />
                   </div>
@@ -501,7 +501,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email Address</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500" />
                   <input 
@@ -510,14 +510,14 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                     value={addForm.email}
                     onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
                     title="Email Address"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                     placeholder="e.g. user@domain.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Secure Password</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Secure Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500" />
                   <input 
@@ -527,14 +527,14 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                     value={addForm.password}
                     onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
                     title="Password"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                     placeholder="Minimum 6 characters"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Phone Number (Optional)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Phone Number (Optional)</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-500" />
                   <input 
@@ -542,19 +542,19 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                     value={addForm.phone}
                     onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
                     title="Phone Number"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl pl-9 pr-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                     placeholder="e.g. +2348012345678"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Account Role Designation</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Account Role Designation</label>
                 <select 
                   title="Account Role"
                   value={addForm.role}
                   onChange={(e) => setAddForm({ ...addForm, role: e.target.value as 'user' | 'admin' })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="user">Investor (User)</option>
                   <option value="admin">Administrator (Staff)</option>
@@ -577,81 +577,81 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       {/* Modal: Edit User Profile */}
       {isEditOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
             <button 
               onClick={() => {
                 setIsEditOpen(false);
                 setSelectedUser(null);
               }}
               title="Close Modal"
-              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Edit User Profile</h3>
-              <p className="text-xs text-slate-400 mt-1">Modify account details and system clearance level for `{selectedUser.email}`.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Edit User Profile</h3>
+              <p className="text-xs text-muted mt-1">Modify account details and system clearance level for `{selectedUser.email}`.</p>
             </div>
 
             <form onSubmit={handleEditUser} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">First Name</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">First Name</label>
                   <input 
                     type="text" 
                     required
                     value={editForm.first_name}
                     onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
                     title="First Name"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Last Name</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Last Name</label>
                   <input 
                     type="text" 
                     required
                     value={editForm.last_name}
                     onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
                     title="Last Name"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Phone Number</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Phone Number</label>
                 <input 
                   type="text" 
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   title="Phone Number"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   placeholder="e.g. +2348012345678"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">System Role</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">System Role</label>
                   <select 
                     title="Account Role"
                     value={editForm.role}
                     onChange={(e) => setEditForm({ ...editForm, role: e.target.value as 'user' | 'admin' })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="user">Investor (User)</option>
                     <option value="admin">Administrator</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">KYC Clearance</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">KYC Clearance</label>
                   <select 
                     title="KYC Clearance Status"
                     value={editForm.kyc_status}
                     onChange={(e) => setEditForm({ ...editForm, kyc_status: e.target.value as 'pending' | 'verified' | 'rejected' })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                   >
                     <option value="pending">Pending Review</option>
                     <option value="verified">Verified</option>
@@ -676,47 +676,47 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       {/* Modal: Adjust Wallet Balance */}
       {isWalletOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-md bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
             <button 
               onClick={() => {
                 setIsWalletOpen(false);
                 setSelectedUser(null);
               }}
               title="Close Modal"
-              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">Manual Wallet Adjustment</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Inject or debit funds manually on behalf of <span className="text-slate-200 font-semibold">{selectedUser.first_name} {selectedUser.last_name}</span>.
+              <h3 className="text-lg font-bold text-foreground font-heading">Manual Wallet Adjustment</h3>
+              <p className="text-xs text-muted mt-1">
+                Inject or debit funds manually on behalf of <span className="text-foreground font-semibold">{selectedUser.first_name} {selectedUser.last_name}</span>.
               </p>
             </div>
 
             {/* Current details */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center text-xs">
-              <span className="text-slate-400">Current Balance:</span>
+            <div className="p-4 rounded-xl bg-input border border-border flex justify-between items-center text-xs">
+              <span className="text-muted">Current Balance:</span>
               <span className="font-mono font-bold text-emerald-400">{formatNaira(selectedUser.balance)}</span>
             </div>
 
             <form onSubmit={handleWalletAdjustment} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Adjustment Type</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Adjustment Type</label>
                   <select 
                     title="Adjustment Type"
                     value={walletForm.type}
                     onChange={(e) => setWalletForm({ ...walletForm, type: e.target.value as 'credit' | 'debit' })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 font-bold"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary font-bold"
                   >
                     <option value="credit" className="text-emerald-400 font-bold">Credit (+) Deposit</option>
                     <option value="debit" className="text-red-400 font-bold">Debit (-) Withdrawal</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Adjustment Value (NGN)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Adjustment Value (NGN)</label>
                   <input 
                     type="number" 
                     required
@@ -724,21 +724,21 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                     value={walletForm.amount}
                     onChange={(e) => setWalletForm({ ...walletForm, amount: e.target.value })}
                     title="Amount"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                     placeholder="e.g. 50000"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Auditable Reason / Explanation</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Auditable Reason / Explanation</label>
                 <textarea 
                   required
                   rows={3}
                   value={walletForm.description}
                   onChange={(e) => setWalletForm({ ...walletForm, description: e.target.value })}
                   title="Reason"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 placeholder-slate-600 leading-normal"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary placeholder-slate-600 leading-normal"
                   placeholder="Explain why this ledger override is taking place. This will be shown to the user and saved in administration audit logs."
                 />
               </div>

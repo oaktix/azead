@@ -65,25 +65,25 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header section */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">Platform Settings</h1>
-        <p className="text-xs text-slate-400 mt-1">Configure global pricing multipliers, commission fees, panic triggers, and liquidity boundaries.</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Platform Settings</h1>
+        <p className="text-xs text-muted mt-1">Configure global pricing multipliers, commission fees, panic triggers, and liquidity boundaries.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Fees and commissions */}
-        <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl space-y-4">
-          <h4 className="text-sm font-bold text-white font-heading flex items-center gap-2">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-xl space-y-4">
+          <h4 className="text-sm font-bold text-foreground font-heading flex items-center gap-2">
             <Percent className="w-4 h-4 text-emerald-400" />
             <span>Fees & Commissions</span>
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">
                 Withdrawal Fee (%)
               </label>
-              <p className="text-[9px] text-slate-500 mb-2">Transaction fee charged gross upon user payouts.</p>
+              <p className="text-[9px] text-muted mb-2">Transaction fee charged gross upon user payouts.</p>
               <div className="relative">
                 <input 
                   type="number" 
@@ -95,17 +95,17 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
                   placeholder="e.g. 2.5"
                   value={form.withdrawal_fee_percentage}
                   onChange={(e) => setForm({ ...form, withdrawal_fee_percentage: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
-                <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-500">%</span>
+                <span className="absolute right-3 top-3 text-[10px] font-bold text-muted">%</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">
                 Early Termination Penalty (%)
               </label>
-              <p className="text-[9px] text-slate-500 mb-2">Yield cancellation fine for early investment liquidations.</p>
+              <p className="text-[9px] text-muted mb-2">Yield cancellation fine for early investment liquidations.</p>
               <div className="relative">
                 <input 
                   type="number" 
@@ -117,17 +117,17 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
                   placeholder="e.g. 10"
                   value={form.early_termination_penalty_percentage}
                   onChange={(e) => setForm({ ...form, early_termination_penalty_percentage: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
-                <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-500">%</span>
+                <span className="absolute right-3 top-3 text-[10px] font-bold text-muted">%</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">
                 Referral Reward Bonus (%)
               </label>
-              <p className="text-[9px] text-slate-500 mb-2">Yield commission percentage awarded on referee&apos;s initial investment.</p>
+              <p className="text-[9px] text-muted mb-2">Yield commission percentage awarded on referee&apos;s initial investment.</p>
               <div className="relative">
                 <input 
                   type="number" 
@@ -139,27 +139,27 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
                   placeholder="e.g. 5"
                   value={form.referral_bonus_percentage}
                   onChange={(e) => setForm({ ...form, referral_bonus_percentage: Number(e.target.value) })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
-                <span className="absolute right-3 top-3 text-[10px] font-bold text-slate-500">%</span>
+                <span className="absolute right-3 top-3 text-[10px] font-bold text-muted">%</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Liquidity thresholds */}
-        <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl space-y-4">
-          <h4 className="text-sm font-bold text-white font-heading flex items-center gap-2">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-xl space-y-4">
+          <h4 className="text-sm font-bold text-foreground font-heading flex items-center gap-2">
             <Coins className="w-4 h-4 text-emerald-400" />
             <span>Liquidity Controls</span>
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">
                 Daily Withdrawal Limit (NGN)
               </label>
-              <p className="text-[9px] text-slate-500 mb-2">Maximum withdrawal allocation allowed platform-wide per calendar day.</p>
+              <p className="text-[9px] text-muted mb-2">Maximum withdrawal allocation allowed platform-wide per calendar day.</p>
               <input 
                 type="number" 
                 required
@@ -168,24 +168,24 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
                 placeholder="e.g. 5000000"
                 value={form.daily_withdrawal_limit}
                 onChange={(e) => setForm({ ...form, daily_withdrawal_limit: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
               />
             </div>
           </div>
         </div>
 
         {/* Emergency pause controls */}
-        <div className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl space-y-4">
-          <h4 className="text-sm font-bold text-white font-heading flex items-center gap-2">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-xl space-y-4">
+          <h4 className="text-sm font-bold text-foreground font-heading flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-red-400" />
             <span>Emergency Fail-Safe Settings</span>
           </h4>
 
-          <div className="p-4 rounded-xl bg-red-950/15 border border-red-500/20 flex items-start space-x-3.5">
+          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start space-x-3.5">
             <AlertOctagon className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <div>
-              <span className="text-xs font-bold text-slate-200">System Emergency Lock (Panic Button)</span>
-              <p className="text-[9px] text-slate-400 mt-1">
+              <span className="text-xs font-bold text-foreground">System Emergency Lock (Panic Button)</span>
+              <p className="text-[9px] text-muted mt-1">
                 Activating this locks all outgoing withdrawal transactions and freezes package checkouts for normal users immediately. Use only in event of emergency audits.
               </p>
               
@@ -195,7 +195,7 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
                   id="panic-toggle"
                   checked={form.panic_button_paused}
                   onChange={(e) => setForm({ ...form, panic_button_paused: e.target.checked })}
-                  className="rounded border-slate-800 text-red-500 focus:ring-red-500 bg-slate-950 w-4 h-4"
+                  className="rounded border-border text-red-500 focus:ring-red-500 bg-input w-4 h-4"
                 />
                 <label htmlFor="panic-toggle" className="text-xs font-bold text-red-400 select-none cursor-pointer">
                   Activate System Emergency Lock (Pause Platform Checkout & Payouts)
