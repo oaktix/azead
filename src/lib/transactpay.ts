@@ -189,6 +189,7 @@ export class TransactpayService {
 
   /**
    * Verifies the webhook signature from Transactpay.
+   * Supports both SHA-512 and SHA-256 HMAC configurations with constant-time comparison.
    */
   static verifySignature(body: string, signature: string): boolean {
     // Bypass signature check for sandbox simulator testing
@@ -202,13 +203,37 @@ export class TransactpayService {
       return false;
     }
 
+    const safeCompare = (a: string, b: string) => {
+      try {
+        const aBuf = Buffer.from(a, 'hex');
+        const bBuf = Buffer.from(b, 'hex');
+        if (aBuf.length !== bBuf.length) {
+          return false;
+        }
+        return crypto.timingSafeEqual(aBuf, bBuf);
+      } catch {
+        return false;
+      }
+    };
+
     try {
-      const expectedSignature = crypto
+      // 1. Try SHA-512
+      const expected512 = crypto
         .createHmac('sha512', secret)
         .update(body)
         .digest('hex');
 
-      return expectedSignature === signature;
+      if (safeCompare(expected512, signature)) {
+        return true;
+      }
+
+      // 2. Try SHA-256 fallback
+      const expected256 = crypto
+        .createHmac('sha256', secret)
+        .update(body)
+        .digest('hex');
+
+      return safeCompare(expected256, signature);
     } catch (e) {
       console.error('Error verifying Transactpay signature:', e);
       return false;

@@ -24,28 +24,63 @@ export async function POST(request: Request) {
     let isSuccess = false;
     let userId: string | null = null;
 
-    // --- Official Transactpay production webhook format ---
-    if (data && data.productName === 'Collection') {
-      reference = data.orderReference || data.reference;
-      amount = Number(data.totalAmountCharged || data.amount);
-      isSuccess = (data.status === 'Successful' || data.status === 'success');
-      // The productCustomerEmail or metaData may contain user info but we rely on deposit lookup
-    }
-    // --- Fallback: mock / sandbox event-based format ---
-    else if (event) {
-      const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
-      if (successEvents.includes(event)) {
-        reference = data?.reference || data?.order_reference || data?.orderReference;
-        amount = Number(data?.amount || data?.order?.amount || data?.totalAmountCharged);
-        const txStatus = (data?.status || '').toLowerCase();
-        isSuccess = txStatus !== 'failed' && txStatus !== 'cancelled';
-        // Mock simulator may embed userId directly in metadata
-        userId = data?.metadata?.userId || data?.userId || null;
-      }
-    }
+    // Support both nested data/Data and top-level payloads
+    const rawData = data || payload.data || payload.Data || payload;
+
+    // Resolve reference (check camelCase, PascalCase, snake_case, order, payment and fallback keys)
+    reference =
+      rawData.orderReference ||
+      rawData.OrderReference ||
+      rawData.order_reference ||
+      rawData.reference ||
+      rawData.Reference ||
+      rawData.paymentReference ||
+      rawData.payment_reference ||
+      rawData.PaymentReference ||
+      '';
+
+    // Resolve amount
+    const rawAmount =
+      rawData.totalAmountCharged ||
+      rawData.TotalAmountCharged ||
+      rawData.amount ||
+      rawData.Amount ||
+      rawData.orderAmount ||
+      rawData.order_amount;
+
+    amount = Number(rawAmount || 0);
+
+    // Resolve status and event
+    const rawStatus =
+      rawData.status ||
+      rawData.Status ||
+      payload.status ||
+      payload.Status ||
+      '';
+
+    const lowerStatus = rawStatus.toLowerCase();
+    const rawStatusCode =
+      payload.statusCode ||
+      payload.StatusCode ||
+      rawData.statusCode ||
+      rawData.StatusCode ||
+      '';
+
+    // Check if webhook is successful
+    const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
+    const lowerEvent = (event || payload.event || '').toLowerCase();
+
+    isSuccess =
+      lowerStatus === 'success' ||
+      lowerStatus === 'successful' ||
+      rawStatusCode === '00' ||
+      successEvents.includes(lowerEvent);
+
+    // Fallback userId extraction (mainly for mock/sandbox)
+    userId = rawData.metadata?.userId || rawData.metadata?.user_id || rawData.userId || rawData.user_id || null;
 
     if (!isSuccess || !reference || amount <= 0) {
-      console.log('Skipping non-successful or incomplete webhook payload.');
+      console.log(`Skipping webhook payload: reference=${reference}, amount=${amount}, isSuccess=${isSuccess}`);
       return NextResponse.json({ success: true, message: 'Skipping unhandled or unsuccessful transaction' });
     }
 
