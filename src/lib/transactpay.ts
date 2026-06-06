@@ -33,10 +33,8 @@ export class TransactpayService {
   static async initializePayment({ userId, email, amount, reference }: InitializePaymentParams): Promise<string> {
     const secretKey = process.env.TRANSACTPAY_SECRET_KEY;
     
-    // In test/local mode without valid keys, we redirect to our built-in mock checkout page
-    if (!secretKey || secretKey.includes('dummy') || secretKey.includes('tp_secret_key_test')) {
-      const mockCheckoutUrl = `/dashboard/wallet/checkout?reference=${reference}&amount=${amount}&userId=${userId}&email=${encodeURIComponent(email)}`;
-      return mockCheckoutUrl;
+    if (!secretKey) {
+      throw new Error('TRANSACTPAY_SECRET_KEY is not configured.');
     }
 
     try {
@@ -61,8 +59,8 @@ export class TransactpayService {
       }
       throw new Error(resData.message || 'Transactpay initialization failed');
     } catch (error) {
-      console.error('Transactpay initialization error, falling back to mock:', error);
-      return `/dashboard/wallet/checkout?reference=${reference}&amount=${amount}&userId=${userId}&email=${encodeURIComponent(email)}`;
+      console.error('Transactpay initialization error:', error);
+      throw error;
     }
   }
 
@@ -70,11 +68,10 @@ export class TransactpayService {
    * Verifies the webhook signature from Transactpay.
    */
   static verifySignature(body: string, signature: string): boolean {
-    const secret = process.env.TRANSACTPAY_SECRET_KEY || 'tp_secret_key_test_12345';
-    
-    // For local mock verification, if signature is "mock-signature", allow it
-    if (signature === 'mock-signature') {
-      return true;
+    const secret = process.env.TRANSACTPAY_SECRET_KEY;
+    if (!secret) {
+      console.error('TRANSACTPAY_SECRET_KEY is not configured for signature verification.');
+      return false;
     }
 
     try {
