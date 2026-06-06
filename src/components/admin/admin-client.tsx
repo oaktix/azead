@@ -286,6 +286,7 @@ export default function AdminClient({
                                 className="w-12 h-10 rounded border border-slate-800 bg-slate-950 overflow-hidden flex-shrink-0 cursor-pointer hover:border-emerald-500/50 transition-colors flex items-center justify-center"
                                 title="Click to preview ID"
                               >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={doc.id_document_url} alt="ID Document Thumbnail" className="w-full h-full object-cover" />
                               </div>
                               <div>
@@ -543,6 +544,7 @@ export default function AdminClient({
 
             {/* Document display */}
             <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center min-h-[300px] p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={activePreviewDoc.id_document_url} 
                 alt="Uploaded ID Document" 

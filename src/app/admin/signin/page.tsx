@@ -19,46 +19,15 @@ export default function AdminSignInPage() {
     setLoading(true);
     setError(null);
 
-    // Development shortcut removed - use Supabase admin credentials
-
     // Attempt normal sign‑in
     const signInResult = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     const signInError = signInResult.error;
-    let authData = signInResult.data;
+    const authData = signInResult.data;
 
-    // If sign‑in fails and credentials match our dev admin defaults, create the admin user
-    if (signInError && email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      // Create admin user with role metadata in auth
-      const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { role: 'admin' } },
-      });
-      if (signUpError) {
-        setError(signUpError.message);
-        setLoading(false);
-        return;
-      }
-      // Insert admin profile record
-      if (signUpData?.user?.id) {
-        await supabase.from('profiles').insert({ id: signUpData.user.id, role: 'admin' });
-      }
-      // Sign‑in the newly created admin
-      const { error: retryError, data: retryData } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (retryError) {
-        setError(retryError.message);
-        setLoading(false);
-        return;
-      }
-      // Use retryData for role check below
-      authData = retryData;
-    } else if (signInError) {
+    if (signInError) {
       setError(signInError.message);
       setLoading(false);
       return;

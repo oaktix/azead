@@ -180,13 +180,13 @@ export default function InvestmentsClient({
       
       {/* Overview page titles */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">Structured Investments</h1>
-        <p className="text-xs text-slate-400 mt-1">Select a high-yield locked level or configure active holdings.</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Structured Investments</h1>
+        <p className="text-xs text-muted mt-1">Select a high-yield locked level or configure active holdings.</p>
       </div>
 
       {/* Available packages */}
       <div className="space-y-6">
-        <h2 className="text-lg font-bold text-white font-heading px-1">Subscription Capital Packages (25.00% APR)</h2>
+        <h2 className="text-lg font-bold text-foreground font-heading px-1">Subscription Capital Packages (25.00% APR)</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map((pkg) => {
             return (
@@ -223,7 +223,7 @@ export default function InvestmentsClient({
                       setAutoReinvestOpt(false);
                       setPurchaseError(null);
                     }}
-                    className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-800 text-xs font-bold transition-all"
+                    className="w-full py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-white dark:border-slate-800 text-xs font-bold transition-all"
                   >
                     Subscribe Level
                   </button>
@@ -235,11 +235,11 @@ export default function InvestmentsClient({
       </div>
 
       {/* Active & Historical Investments */}
-      <div className="space-y-6 border-t border-slate-900 pt-10">
-        <h2 className="text-lg font-bold text-white font-heading px-1">My Active & Completed Positions</h2>
+      <div className="space-y-6 border-t border-border pt-10">
+        <h2 className="text-lg font-bold text-foreground font-heading px-1">My Active & Completed Positions</h2>
         
         {investments.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-[#0b0f19]/30 border border-slate-900 text-center text-slate-400 text-sm">
+          <div className="p-8 rounded-2xl bg-card/30 border border-border text-center text-muted text-sm">
             You do not currently hold any investment positions. Use the packages above to subscribe.
           </div>
         ) : (
@@ -254,68 +254,68 @@ export default function InvestmentsClient({
               const end = new Date(inv.maturity_date);
               
               return (
-                <div key={inv.id} className="p-6 rounded-2xl bg-[#0b0f19] border border-slate-900 shadow-xl flex flex-col justify-between space-y-6">
+                <div key={inv.id} className="p-6 rounded-2xl bg-card border border-border shadow-xl flex flex-col justify-between space-y-6">
                   
                   {/* Row Header */}
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="text-sm font-bold text-white font-heading uppercase">{pkgName} Allocation</h4>
-                      <div className="text-[10px] text-slate-500 mt-1 font-mono">
+                      <h4 className="text-sm font-bold text-foreground font-heading uppercase">{pkgName} Allocation</h4>
+                      <div className="text-[10px] text-muted mt-1 font-mono">
                         Reference: {inv.id.substring(0, 8).toUpperCase()}
                       </div>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wide ${
-                      isActive ? 'bg-emerald-950/60 border border-emerald-500/20 text-emerald-400' :
-                      isPendingTermination ? 'bg-amber-950/60 border border-amber-500/20 text-amber-400' :
-                      isCompleted ? 'bg-blue-950/60 border border-blue-500/20 text-blue-400' :
-                      'bg-slate-950/60 border border-slate-800 text-slate-400'
+                      isActive ? 'bg-emerald-500/10 dark:bg-emerald-950/60 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
+                      isPendingTermination ? 'bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 text-amber-800 dark:text-amber-400' :
+                      isCompleted ? 'bg-blue-500/10 dark:bg-blue-950/60 border border-blue-500/20 text-blue-600 dark:text-blue-400' :
+                      'bg-muted/10 border border-border text-muted'
                     }`}>
                       {inv.status.replace('_', ' ')}
                     </span>
                   </div>
 
                   {/* Body Numbers */}
-                  <div className="grid grid-cols-2 gap-4 text-xs font-mono text-slate-400 border-t border-b border-slate-900 py-4">
+                  <div className="grid grid-cols-2 gap-4 text-xs font-mono text-muted border-t border-b border-border py-4">
                     <div>
-                      <span className="text-[10px] text-slate-500">Principal Capital</span>
-                      <div className="text-sm font-bold text-white mt-0.5">{formatNaira(inv.amount)}</div>
+                      <span className="text-[10px] text-muted">Principal Capital</span>
+                      <div className="text-sm font-bold text-foreground mt-0.5">{formatNaira(inv.amount)}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500">Yield APR</span>
-                      <div className="text-sm font-bold text-emerald-400 mt-0.5">{inv.interest_rate}% APR</div>
+                      <span className="text-[10px] text-muted">Yield APR</span>
+                      <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{inv.interest_rate}% APR</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500">Start Date</span>
-                      <div className="text-white mt-0.5">{start.toLocaleDateString()}</div>
+                      <span className="text-[10px] text-muted">Start Date</span>
+                      <div className="text-foreground mt-0.5">{start.toLocaleDateString()}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500">Maturity Date</span>
-                      <div className="text-white mt-0.5">{end.toLocaleDateString()}</div>
+                      <span className="text-[10px] text-muted">Maturity Date</span>
+                      <div className="text-foreground mt-0.5">{end.toLocaleDateString()}</div>
                     </div>
                   </div>
 
                   {/* Actions / Switches */}
                   {isActive && (
-                    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-slate-950/60 border border-slate-900 p-3 rounded-xl">
+                    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-secondary/20 border border-border p-3 rounded-xl">
                       
                       {/* Auto Roll Toggle */}
                       <label className="flex items-center space-x-3 cursor-pointer">
                         <div className="relative">
                           <input 
                             type="checkbox"
-                            className="sr-only"
+                             className="sr-only"
                             checked={inv.auto_reinvest}
                             disabled={toggleLoadingId === inv.id}
                             onChange={() => handleToggleAutoReinvest(inv.id, inv.auto_reinvest)}
                           />
                           <div className={`w-8 h-4 rounded-full transition-colors ${
-                            inv.auto_reinvest ? 'bg-emerald-500' : 'bg-slate-800'
+                            inv.auto_reinvest ? 'bg-emerald-500' : 'bg-muted/30'
                           }`} />
-                          <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-slate-950 transition-transform ${
+                          <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-card transition-transform ${
                             inv.auto_reinvest ? 'translate-x-4' : 'translate-x-0'
                           }`} />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-muted uppercase tracking-wide">
                           {toggleLoadingId === inv.id ? 'Updating...' : 'Auto-Reinvest Capital'}
                         </span>
                       </label>
@@ -326,7 +326,7 @@ export default function InvestmentsClient({
                           setTerminatingInv(inv);
                           setTerminationError(null);
                         }}
-                        className="py-1.5 px-3 rounded-lg bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 text-red-400 hover:text-red-300 text-[10px] font-bold transition-all text-center"
+                        className="py-1.5 px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 text-[10px] font-bold transition-all text-center"
                       >
                         Terminate Early
                       </button>
@@ -334,7 +334,7 @@ export default function InvestmentsClient({
                   )}
 
                   {isPendingTermination && (
-                    <div className="p-3 rounded-xl bg-amber-950/10 border border-amber-500/20 text-[10px] text-amber-400 flex items-start space-x-2">
+                    <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/10 border border-amber-500/20 text-[10px] text-amber-800 dark:text-amber-400 flex items-start space-x-2">
                       <Clock className="w-4 h-4 flex-shrink-0 mt-0.5" />
                       <span>Early termination pending admin review. Principal minus 10% penalty will refund to wallet.</span>
                     </div>
@@ -348,55 +348,55 @@ export default function InvestmentsClient({
 
       {/* MODAL 1: Purchase Confirmation */}
       {selectedPkg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6 animate-in fade-in zoom-in-95 duration-200">
             <button 
               title="Close Modal"
               aria-label="Close Modal"
               onClick={() => setSelectedPkg(null)}
-              className="absolute top-4 right-4 p-1 text-slate-400 hover:text-white rounded-lg"
+              className="absolute top-4 right-4 p-1 text-muted hover:text-foreground rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center">
-              <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-950 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3">
                 <Award className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-white font-heading">Confirm Investment</h3>
-              <p className="text-xs text-slate-400 mt-1">Subscribe to the premium wealth class</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Confirm Investment</h3>
+              <p className="text-xs text-muted mt-1">Subscribe to the premium wealth class</p>
             </div>
 
             {purchaseError && (
-              <div className="p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-400 text-xs flex items-start space-x-2">
+              <div className="p-4 rounded-xl bg-red-500/10 dark:bg-red-950/20 border border-red-500/30 text-red-700 dark:text-red-400 text-xs flex items-start space-x-2">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{purchaseError}</span>
               </div>
             )}
 
             {purchaseSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 text-xs flex items-start space-x-2">
+              <div className="p-4 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs flex items-start space-x-2">
                 <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>Subscription successful! Allocation has started.</span>
               </div>
             )}
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-850 font-mono text-xs space-y-2.5 text-slate-400">
+            <div className="p-4 rounded-xl bg-muted/10 border border-border font-mono text-xs space-y-2.5 text-muted">
               <div className="flex justify-between">
                 <span>Selected Package:</span>
-                <span className="text-white font-bold uppercase">{selectedPkg.name} Level</span>
+                <span className="text-foreground font-bold uppercase">{selectedPkg.name} Level</span>
               </div>
               <div className="flex justify-between">
                 <span>Capital Required:</span>
-                <span className="text-white font-bold">{formatNaira(selectedPkg.amount)}</span>
+                <span className="text-foreground font-bold">{formatNaira(selectedPkg.amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Guaranteed Yield Rate:</span>
-                <span className="text-emerald-400 font-bold">25.00% APR</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">25.00% APR</span>
               </div>
-              <div className="flex justify-between border-t border-slate-900 pt-2 text-slate-500">
+              <div className="flex justify-between border-t border-border pt-2 text-muted">
                 <span>My Wallet Balance:</span>
-                <span className={walletBalance >= selectedPkg.amount ? 'text-white' : 'text-red-400'}>
+                <span className={walletBalance >= selectedPkg.amount ? 'text-foreground' : 'text-red-500'}>
                   {formatNaira(walletBalance)}
                 </span>
               </div>
@@ -404,16 +404,16 @@ export default function InvestmentsClient({
 
             {walletBalance >= selectedPkg.amount ? (
               <div className="space-y-4">
-                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-950/60 border border-slate-850 rounded-xl">
+                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-secondary/20 border border-border rounded-xl">
                   <input 
                     type="checkbox"
-                    className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950"
+                    className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card"
                     checked={autoReinvestOpt}
                     onChange={(e) => setAutoReinvestOpt(e.target.checked)}
                   />
                   <div>
-                    <div className="text-xs font-bold text-slate-200 uppercase">Auto-Reinvest On Maturity</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Pay accrued interest and roll over capital</div>
+                    <div className="text-xs font-bold text-foreground uppercase">Auto-Reinvest On Maturity</div>
+                    <div className="text-[10px] text-muted mt-0.5">Pay accrued interest and roll over capital</div>
                   </div>
                 </label>
 
@@ -428,12 +428,12 @@ export default function InvestmentsClient({
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-red-950/10 border border-red-500/10 text-[10px] text-red-400/80 leading-normal">
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[10px] text-red-700 dark:text-red-400/80 leading-normal">
                   Your active balance is insufficient to purchase this package. Fund your wallet to allocate this capital.
                 </div>
                 <button
                   onClick={() => router.push('/dashboard/wallet?action=deposit')}
-                  className="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-all"
+                  className="w-full py-3.5 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border font-bold text-sm transition-all"
                 >
                   Go to Wallet Deposit
                 </button>
@@ -445,55 +445,55 @@ export default function InvestmentsClient({
 
       {/* MODAL 2: Early Termination Confirmation */}
       {terminatingInv && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6 animate-in fade-in zoom-in-95 duration-200">
             <button 
               title="Close Modal"
               aria-label="Close Modal"
               onClick={() => setTerminatingInv(null)}
-              className="absolute top-4 right-4 p-1 text-slate-400 hover:text-white rounded-lg"
+              className="absolute top-4 right-4 p-1 text-muted hover:text-foreground rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center">
-              <div className="w-12 h-12 rounded-xl bg-red-950/40 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-xl bg-red-500/10 dark:bg-red-950/40 border border-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-3">
                 <AlertTriangle className="w-6 h-6 animate-pulse" />
               </div>
-              <h3 className="text-lg font-bold text-white font-heading">Early Termination Request</h3>
-              <p className="text-xs text-slate-400 mt-1">Review penalty and locking waiver conditions</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Early Termination Request</h3>
+              <p className="text-xs text-muted mt-1">Review penalty and locking waiver conditions</p>
             </div>
 
             {terminationError && (
-              <div className="p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-400 text-xs flex items-start space-x-2">
+              <div className="p-4 rounded-xl bg-red-500/10 dark:bg-red-950/20 border border-red-500/30 text-red-700 dark:text-red-400 text-xs flex items-start space-x-2">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{terminationError}</span>
               </div>
             )}
 
             {terminationSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 text-xs flex items-start space-x-2">
+              <div className="p-4 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs flex items-start space-x-2">
                 <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>Termination requested! Pending admin clearance.</span>
               </div>
             )}
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-850 font-mono text-xs space-y-2.5 text-slate-400">
+            <div className="p-4 rounded-xl bg-muted/10 border border-border font-mono text-xs space-y-2.5 text-muted">
               <div className="flex justify-between">
                 <span>Original Capital:</span>
-                <span className="text-white font-bold">{formatNaira(terminatingInv.amount)}</span>
+                <span className="text-foreground font-bold">{formatNaira(terminatingInv.amount)}</span>
               </div>
-              <div className="flex justify-between text-red-400">
+              <div className="flex justify-between text-red-500">
                 <span>Early Termination Penalty (10%):</span>
                 <span>- {formatNaira(terminatingInv.amount * 0.10)}</span>
               </div>
-              <div className="flex justify-between text-emerald-400 font-bold border-t border-slate-900 pt-2 text-sm">
+              <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold border-t border-border pt-2 text-sm">
                 <span>Refund Payout to Wallet:</span>
                 <span>{formatNaira(terminatingInv.amount * 0.90)}</span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-amber-950/10 border border-amber-500/20 text-[10px] text-amber-400/80 leading-normal space-y-2">
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-800 dark:text-amber-400/80 leading-normal space-y-2">
               <p><strong>Lock-In Protocol WAIVER terms:</strong></p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>A 10.00% capital penalty is immediately deducted from the principal.</li>
@@ -505,7 +505,7 @@ export default function InvestmentsClient({
             <button
               onClick={handleEarlyTermination}
               disabled={terminationLoading}
-              className="w-full py-3.5 rounded-xl bg-red-500 hover:bg-red-600 text-slate-950 font-bold text-sm transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
             >
               {terminationLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               <span>Accept Terms & Submit Request</span>
