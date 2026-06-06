@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, History, Coins, ArrowUpRight, ArrowDownLeft, Gift, ShieldAlert } from 'lucide-react';
+import { Search, History, Coins, ArrowUpRight, ArrowDownLeft, Gift, ShieldAlert, X, Copy, CheckCircle2 } from 'lucide-react';
 
 export interface TransactionItem {
   id: string;
@@ -21,12 +21,20 @@ interface TransactionsClientProps {
 export default function TransactionsClient({ initialTransactions }: TransactionsClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [selectedTx, setSelectedTx] = useState<TransactionItem | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
 
   const formatNaira = (val: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
     }).format(val);
+  };
+
+  const copyToReference = (ref: string) => {
+    navigator.clipboard.writeText(ref);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2000);
   };
 
   const getIcon = (type: TransactionItem['type']) => {
@@ -101,7 +109,7 @@ export default function TransactionsClient({ initialTransactions }: Transactions
           <span>Transaction Logs</span>
         </h1>
         <p className="text-xs text-muted mt-1">
-          Audit and view complete records of all deposits, withdrawals, investment debits, payouts, and referral commission bonuses.
+          Audit and view complete records of all deposits, withdrawals, investment debits, payouts, and referral commission bonuses. Click a row to view full auditable details.
         </p>
       </div>
 
@@ -183,7 +191,11 @@ export default function TransactionsClient({ initialTransactions }: Transactions
             </thead>
             <tbody className="divide-y divide-border">
               {filteredTransactions.map((tx) => (
-                <tr key={tx.id} className="align-middle hover:bg-muted/10 transition-colors">
+                <tr 
+                  key={tx.id} 
+                  onClick={() => setSelectedTx(tx)}
+                  className="align-middle hover:bg-muted/30 cursor-pointer transition-colors"
+                >
                   <td className="py-4">
                     <div className="font-bold text-foreground">{tx.user_name}</div>
                     <div className="text-[10px] text-muted font-mono mt-0.5">{tx.user_email}</div>
@@ -213,6 +225,85 @@ export default function TransactionsClient({ initialTransactions }: Transactions
           </table>
         )}
       </div>
+
+      {/* Transaction Details Modal */}
+      {selectedTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-250">
+          <div className="w-full max-w-lg p-6 rounded-3xl bg-card border border-border shadow-2xl space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <div>
+                <h3 className="text-sm font-bold text-foreground font-heading">Ledger Audit Certificate</h3>
+                <p className="text-[10px] text-muted font-mono uppercase tracking-wider mt-0.5">ID: {selectedTx.id}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedTx(null)}
+                className="p-1 rounded-lg bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                title="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Receipt Amount Header */}
+            <div className="text-center py-6 bg-secondary/20 rounded-2xl border border-border relative">
+              <div className="absolute top-2 right-2">
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border flex items-center gap-1 w-fit ${getTypeColor(selectedTx.type)}`}>
+                  {getIcon(selectedTx.type)}
+                  <span>{selectedTx.type.replace('_', ' ')}</span>
+                </span>
+              </div>
+              <span className="text-[10px] text-muted uppercase tracking-wider font-bold block mb-1">Transaction Value</span>
+              <div className={`text-3xl font-black font-mono tracking-tight ${selectedTx.amount >= 0 ? 'text-emerald-400' : 'text-foreground'}`}>
+                {selectedTx.amount >= 0 ? '+' : ''}{formatNaira(selectedTx.amount)}
+              </div>
+            </div>
+
+            {/* Audit Properties */}
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-3 py-2 border-b border-border/50">
+                <span className="text-muted font-semibold">Investor Name</span>
+                <span className="col-span-2 text-foreground font-bold text-right">{selectedTx.user_name}</span>
+              </div>
+              <div className="grid grid-cols-3 py-2 border-b border-border/50">
+                <span className="text-muted font-semibold">Investor Email</span>
+                <span className="col-span-2 text-foreground font-mono text-right">{selectedTx.user_email}</span>
+              </div>
+              <div className="grid grid-cols-3 py-2 border-b border-border/50 items-center">
+                <span className="text-muted font-semibold">Reference</span>
+                <div className="col-span-2 flex items-center justify-end gap-2">
+                  <span className="text-foreground font-mono font-bold">{selectedTx.reference}</span>
+                  <button 
+                    onClick={() => copyToReference(selectedTx.reference)}
+                    className="p-1 rounded bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                    title="Copy reference code"
+                  >
+                    {copiedRef ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 py-2 border-b border-border/50">
+                <span className="text-muted font-semibold">Processed Date</span>
+                <span className="col-span-2 text-foreground text-right">{new Date(selectedTx.created_at).toLocaleString()}</span>
+              </div>
+              <div className="py-2 space-y-1">
+                <span className="text-muted font-semibold block">Audit Memo / Description</span>
+                <p className="p-3 bg-secondary/30 border border-border/80 rounded-xl text-foreground/90 font-sans leading-normal">
+                  {selectedTx.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Close action button */}
+            <button
+              onClick={() => setSelectedTx(null)}
+              className="w-full py-3 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-xs transition-all shadow-md"
+            >
+              Acknowledge Audit Info
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

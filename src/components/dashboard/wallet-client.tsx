@@ -10,7 +10,9 @@ import {
   AlertCircle, 
   CheckCircle2,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  X,
+  Copy
 } from 'lucide-react';
 
 interface Transaction {
@@ -53,6 +55,16 @@ export default function WalletClient({
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+
+  // Transaction details modal states
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
+
+  const copyToReference = (ref: string) => {
+    navigator.clipboard.writeText(ref);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2000);
+  };
 
   // Fee calculation (1.9% of withdrawal amount)
   const numWithdrawAmount = Number(withdrawAmount) || 0;
@@ -396,7 +408,11 @@ export default function WalletClient({
                     const formattedDate = new Date(tx.created_at).toLocaleString();
                     
                     return (
-                      <div key={tx.id} className={`flex justify-between items-center ${idx > 0 ? 'pt-4' : ''}`}>
+                      <div 
+                        key={tx.id} 
+                        onClick={() => setSelectedTx(tx)}
+                        className={`flex justify-between items-center cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-xl transition-all ${idx > 0 ? 'mt-2' : ''}`}
+                      >
                         <div className="flex items-center space-x-2.5">
                           <div className={`p-1.5 rounded-lg flex-shrink-0 ${isCredit ? 'bg-emerald-500/10 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 dark:bg-red-950/50 text-red-600 dark:text-red-400'}`}>
                             {isCredit ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
@@ -446,6 +462,75 @@ export default function WalletClient({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>SSL SECURE HANDSHAKE ACTIVE</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Transaction Details Modal */}
+      {selectedTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-250">
+          <div className="w-full max-w-sm p-6 rounded-3xl bg-card border border-border shadow-2xl space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <div>
+                <h3 className="text-sm font-bold text-foreground font-heading">Transaction Receipt</h3>
+                <p className="text-[9px] text-muted font-mono uppercase tracking-wider mt-0.5">ID: {selectedTx.id}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedTx(null)}
+                className="p-1 rounded-lg bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                title="Close receipt"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Receipt Amount Header */}
+            <div className="text-center py-6 bg-secondary/20 rounded-2xl border border-border relative">
+              <span className="text-[10px] text-muted uppercase tracking-wider font-bold block mb-1">Transaction Value</span>
+              <div className={`text-2xl font-black font-mono tracking-tight ${Number(selectedTx.amount) >= 0 ? 'text-emerald-400' : 'text-foreground'}`}>
+                {Number(selectedTx.amount) >= 0 ? '+' : ''}{formatNaira(selectedTx.amount)}
+              </div>
+            </div>
+
+            {/* Audit Properties */}
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-3 py-2 border-b border-border/50">
+                <span className="text-muted font-semibold">Classification</span>
+                <span className="col-span-2 text-foreground font-bold text-right uppercase tracking-wider font-mono text-[10px]">{selectedTx.type.replace('_', ' ')}</span>
+              </div>
+              <div className="grid grid-cols-3 py-2 border-b border-border/50 items-center">
+                <span className="text-muted font-semibold">Reference</span>
+                <div className="col-span-2 flex items-center justify-end gap-2">
+                  <span className="text-foreground font-mono font-bold">{selectedTx.reference}</span>
+                  <button 
+                    onClick={() => copyToReference(selectedTx.reference)}
+                    className="p-1 rounded bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                    title="Copy reference code"
+                  >
+                    {copiedRef ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 py-2 border-b border-border/50">
+                <span className="text-muted font-semibold">Processed Date</span>
+                <span className="col-span-2 text-foreground text-right">{new Date(selectedTx.created_at).toLocaleString()}</span>
+              </div>
+              <div className="py-2 space-y-1">
+                <span className="text-muted font-semibold block">Memo Description</span>
+                <p className="p-3 bg-secondary/30 border border-border/80 rounded-xl text-foreground/95 font-sans leading-normal">
+                  {selectedTx.description || selectedTx.type.replace('_', ' ')}
+                </p>
+              </div>
+            </div>
+
+            {/* Close action button */}
+            <button
+              onClick={() => setSelectedTx(null)}
+              className="w-full py-3 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-xs transition-all shadow-md"
+            >
+              Close Receipt
+            </button>
           </div>
         </div>
       )}
