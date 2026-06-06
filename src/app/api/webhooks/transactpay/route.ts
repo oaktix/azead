@@ -17,23 +17,30 @@ export async function POST(request: Request) {
     const payload = JSON.parse(bodyText);
     const { event, data } = payload;
 
-    console.log('Transactpay webhook received:', event, JSON.stringify(data, null, 2));
+    console.log('Transactpay webhook received:', JSON.stringify(payload, null, 2));
 
-    // Handle successful payment events (Transactpay may use different event names)
-    const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
-    if (successEvents.includes(event)) {
-      const reference = data?.reference || data?.order_reference;
-      const amount = data?.amount || data?.order?.amount;
-      const txStatus = (data?.status || '').toLowerCase();
+    let reference = '';
+    let amount = 0;
+    let isSuccess = false;
 
-      if (!reference) {
-        return NextResponse.json({ error: 'Missing reference in webhook' }, { status: 400 });
+    // Check if it's the official Transactpay webhook format
+    if (data && data.productName === 'Collection') {
+      reference = data.orderReference || data.reference;
+      amount = Number(data.totalAmountCharged || data.amount);
+      isSuccess = (data.status === 'Successful' || data.status === 'success');
+    } 
+    // Fallback to mock/sandbox event format
+    else if (event) {
+      const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
+      if (successEvents.includes(event)) {
+        reference = data?.reference || data?.order_reference || data?.orderReference;
+        amount = Number(data?.amount || data?.order?.amount || data?.totalAmountCharged);
+        const txStatus = (data?.status || '').toLowerCase();
+        isSuccess = txStatus !== 'failed' && txStatus !== 'cancelled';
       }
+    }
 
-      if (txStatus === 'failed' || txStatus === 'cancelled') {
-        return NextResponse.json({ message: 'Transaction not successful, skipping' }, { status: 200 });
-      }
-
+    if (isSuccess && reference && amount > 0) {
       // Initialize admin client
       const supabase = createAdminClient();
 
@@ -56,11 +63,7 @@ export async function POST(request: Request) {
       }
 
       const userId = deposit.user_id;
-      const creditAmount = Number(amount);
-
-      if (!creditAmount || creditAmount <= 0) {
-        return NextResponse.json({ error: 'Invalid amount in webhook' }, { status: 400 });
-      }
+      const creditAmount = amount;
 
       // Call PL/pgSQL database function to credit wallet atomically
       const { data: creditSuccess, error: rpcError } = await supabase.rpc('process_successful_deposit', {
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, processed: creditSuccess });
     }
 
-    return NextResponse.json({ success: true, message: `Unhandled event: ${event}` });
+    return NextResponse.json({ success: true, message: `Skipping unhandled or unsuccessful transaction status` });
   } catch (error: unknown) {
     const err = error as Error;
     console.error('Webhook endpoint failure:', error);
