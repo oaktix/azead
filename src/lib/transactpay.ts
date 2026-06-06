@@ -203,6 +203,21 @@ export class TransactpayService {
       return false;
     }
 
+    let cleanSignature = (signature || '').trim();
+    if (!cleanSignature) {
+      return false;
+    }
+
+    // Check if signature is hexadecimal; if not, assume Base64 and convert to hex
+    const isHex = /^[0-9a-fA-F]+$/.test(cleanSignature);
+    if (!isHex) {
+      try {
+        cleanSignature = Buffer.from(cleanSignature, 'base64').toString('hex');
+      } catch (err) {
+        console.error('Failed to parse signature as Base64:', err);
+      }
+    }
+
     const safeCompare = (a: string, b: string) => {
       try {
         const aBuf = Buffer.from(a, 'hex');
@@ -223,7 +238,7 @@ export class TransactpayService {
         .update(body)
         .digest('hex');
 
-      if (safeCompare(expected512, signature)) {
+      if (safeCompare(expected512, cleanSignature)) {
         return true;
       }
 
@@ -233,7 +248,7 @@ export class TransactpayService {
         .update(body)
         .digest('hex');
 
-      return safeCompare(expected256, signature);
+      return safeCompare(expected256, cleanSignature);
     } catch (e) {
       console.error('Error verifying Transactpay signature:', e);
       return false;

@@ -5,7 +5,23 @@ import { TransactpayService } from '@/lib/transactpay';
 export async function POST(request: Request) {
   try {
     const bodyText = await request.text();
-    const signature = request.headers.get('x-transactpay-signature') || '';
+    
+    // Log all incoming headers to help verify the correct signature header name
+    const headersMap: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      headersMap[key] = value;
+    });
+    console.log('Incoming webhook headers:', JSON.stringify(headersMap, null, 2));
+
+    const signature = 
+      request.headers.get('x-transactpay-signature') || 
+      request.headers.get('x-signature') || 
+      request.headers.get('X-Signature') || 
+      request.headers.get('signature') || 
+      '';
+
+    console.log('Extracted webhook signature:', signature);
+    console.log('Incoming webhook raw body:', bodyText);
 
     // Verify callback authenticity
     const isValid = TransactpayService.verifySignature(bodyText, signature);
@@ -17,7 +33,7 @@ export async function POST(request: Request) {
     const payload = JSON.parse(bodyText);
     const { event, data } = payload;
 
-    console.log('Transactpay webhook received:', JSON.stringify(payload, null, 2));
+    console.log('Transactpay webhook verified successfully:', JSON.stringify(payload, null, 2));
 
     let reference = '';
     let amount = 0;
