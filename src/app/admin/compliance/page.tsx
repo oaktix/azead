@@ -38,7 +38,7 @@ export default async function AdminCompliancePage() {
       bank_name,
       account_number,
       account_name,
-      profiles (
+      profiles!withdrawals_user_id_fkey (
         first_name,
         last_name
       )
