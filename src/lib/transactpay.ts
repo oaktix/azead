@@ -30,18 +30,51 @@ export interface WebhookPayload {
  * and Exponent elements.
  */
 function encryptPayload(data: object, rsaPubKey: string): string {
-  // 1. Decode the base64-encoded key and strip the "4096!" prefix
-  let rsaKeyValue = Buffer.from(rsaPubKey, 'base64').toString('utf-8');
-  rsaKeyValue = rsaKeyValue.replace('4096!', '');
+  // Clean the input key (remove any outer quotes/whitespace)
+  const cleanKey = rsaPubKey.trim().replace(/^["']|["']$/g, '');
+  let rsaKeyValue = '';
+
+  // Determine if the key is raw XML or needs base64 decoding
+  if (cleanKey.includes('<RSAKeyValue>') || cleanKey.includes('<Modulus>')) {
+    rsaKeyValue = cleanKey;
+  } else {
+    try {
+      const decoded = Buffer.from(cleanKey, 'base64').toString('utf-8');
+      if (decoded.includes('<RSAKeyValue>') || decoded.includes('<Modulus>') || decoded.startsWith('4096!')) {
+        rsaKeyValue = decoded;
+      } else {
+        rsaKeyValue = cleanKey;
+      }
+    } catch {
+      rsaKeyValue = cleanKey;
+    }
+  }
+
+  // Strip prefix "4096!" if present
+  if (rsaKeyValue.startsWith('4096!')) {
+    rsaKeyValue = rsaKeyValue.replace('4096!', '');
+  }
+
+  // Check if we ended up with valid XML tags
+  if (!rsaKeyValue.includes('<RSAKeyValue>') && !rsaKeyValue.includes('<Modulus>')) {
+    throw new Error(`Invalid encryption key format: expected XML <RSAKeyValue> structure (either raw or base64-encoded). Please check TRANSACTPAY_ENCRYPTION_KEY.`);
+  }
 
   // 2. Parse the XML to extract Modulus and Exponent
-  const parser = new DOMParser();
+  const parser = new DOMParser({
+    onError: (level: string, msg: string) => {
+      if (level === 'fatalError' || level === 'error') {
+        throw new Error(msg);
+      }
+    }
+  } as any);
+  
   const xmlDoc = parser.parseFromString(rsaKeyValue, 'text/xml');
   const modulusB64 = xmlDoc.getElementsByTagName('Modulus')[0]?.textContent;
   const exponentB64 = xmlDoc.getElementsByTagName('Exponent')[0]?.textContent;
 
   if (!modulusB64 || !exponentB64) {
-    throw new Error('Invalid encryption key: could not extract RSA Modulus/Exponent');
+    throw new Error('Invalid encryption key: could not extract RSA Modulus/Exponent elements.');
   }
 
   // 3. Convert Modulus and Exponent from base64 → BigInteger
@@ -124,7 +157,7 @@ export class TransactpayService {
       // RSA-encrypt the entire payload
       const encryptedData = encryptPayload(payload, encryptionKey);
 
-      const response = await fetch(`${this.API_URL}/payment/order/create`, {
+      const response = await fetch(`${this.API_URL}/payment/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,13 +169,18 @@ export class TransactpayService {
 
       const resData = await response.json();
 
-      console.log('Transactpay order/create response:', JSON.stringify(resData, null, 2));
+      console.log('Transactpay payment/create response:', JSON.stringify(resData, null, 2));
 
+      if (resData.isSuccess && resData.redirectUrl) {
+        return resData.redirectUrl;
+      }
+
+      // Keep compatibility fallback just in case
       if (resData.status && resData.data?.checkout_url) {
         return resData.data.checkout_url;
       }
 
-      throw new Error(resData.message || 'Transactpay order creation failed');
+      throw new Error(resData.message || 'Transactpay payment generation failed');
     } catch (error) {
       console.error('Transactpay initialization error:', error);
       throw error;
