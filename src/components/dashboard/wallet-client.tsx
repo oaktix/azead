@@ -8,7 +8,9 @@ import {
   ArrowDownLeft, 
   Loader2, 
   AlertCircle, 
-  CheckCircle2 
+  CheckCircle2,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 
 interface Transaction {
@@ -228,6 +230,23 @@ export default function WalletClient({
                       </button>
                     ))}
                   </div>
+
+                  {Number(depositAmount) > 0 && (
+                    <div className="mt-4 p-4 rounded-xl bg-secondary/30 border border-border/80 font-sans text-xs space-y-2 text-muted animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="flex justify-between">
+                        <span>Gateway Processor Fee:</span>
+                        <span className="font-semibold text-foreground">Free (₦0.00)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Settlement Speed:</span>
+                        <span className="font-semibold text-emerald-400 font-bold">Instant Credit</span>
+                      </div>
+                      <div className="flex justify-between border-t border-border/50 pt-2 text-foreground font-bold">
+                        <span>Amount to Credit:</span>
+                        <span className="font-mono text-emerald-400">{formatNaira(Number(depositAmount))}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -406,6 +425,30 @@ export default function WalletClient({
         </div>
 
       </div>
+
+      {depositLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-sm p-8 rounded-2xl bg-card border border-border/80 shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-200">
+            <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-2 border-emerald-500/20 animate-ping" />
+              <div className="absolute inset-0 rounded-full border-2 border-t-emerald-400 animate-spin" />
+              <Lock className="w-6 h-6 text-emerald-400 animate-pulse" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-base font-bold text-foreground font-heading">Securing Connection...</h3>
+              <p className="text-xs text-muted leading-relaxed">
+                Opening an encrypted checkout tunnel to Transactpay. Please do not close or reload this page.
+              </p>
+            </div>
+
+            <div className="py-2.5 px-4 rounded-xl bg-secondary/50 border border-border flex items-center justify-center space-x-2 text-[10px] text-muted font-mono tracking-wide">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>SSL SECURE HANDSHAKE ACTIVE</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
