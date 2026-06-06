@@ -9,7 +9,8 @@ import {
   Briefcase, 
   TrendingUp, 
   ShieldAlert, 
-  Settings 
+  Settings,
+  History
 } from 'lucide-react';
 
 export default function AdminNav() {
@@ -21,6 +22,7 @@ export default function AdminNav() {
     { name: 'Packages', href: '/admin/packages', icon: Briefcase },
     { name: 'Investments', href: '/admin/investments', icon: TrendingUp },
     { name: 'Compliance', href: '/admin/compliance', icon: ShieldAlert },
+    { name: 'Transactions', href: '/admin/transactions', icon: History },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
