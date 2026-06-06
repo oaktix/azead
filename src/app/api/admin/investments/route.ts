@@ -159,6 +159,17 @@ export async function PUT(request: Request) {
 
     const adminClient = createAdminClient();
 
+    // If the admin is setting the status to 'early_terminated', execute the approval database function
+    if (status === 'early_terminated') {
+      const { data: success, error: rpcError } = await adminClient.rpc('approve_early_termination', {
+        p_investment_id: id,
+        p_admin_id: authCheck.adminId
+      });
+
+      if (rpcError) throw rpcError;
+      return NextResponse.json({ success: true });
+    }
+
     const { error: updateError } = await adminClient
       .from('investments')
       .update({

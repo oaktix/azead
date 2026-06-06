@@ -10,7 +10,8 @@ import {
   X, 
   Loader2, 
   Coins, 
-  Calendar
+  Calendar,
+  Check
 } from 'lucide-react';
 
 export interface InvestmentItem {
@@ -208,6 +209,48 @@ export default function InvestmentsClient({
     }
   };
 
+  const handleApproveTermination = async (inv: InvestmentItem) => {
+    const formattedAmt = new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(inv.amount);
+    
+    const payout = inv.amount * 0.9;
+    const formattedPayout = new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(payout);
+
+    if (!confirm(`Are you sure you want to APPROVE early termination for ${inv.profiles?.first_name} ${inv.profiles?.last_name}'s investment?\n\nOriginal Capital: ${formattedAmt}\nRefund Payout (90%): ${formattedPayout}\nPenalty (10%): ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(inv.amount * 0.1)}\n\nThis will credit their wallet immediately.`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/investments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: inv.id,
+          status: 'early_terminated'
+        }),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || 'Failed to approve early termination');
+      }
+
+      alert('Early termination approved successfully! User wallet has been credited.');
+      router.refresh();
+    } catch (err: unknown) {
+      const errorObj = err as Error;
+      alert(errorObj.message || 'An error occurred during approval');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calculateProgress = (startStr: string, endStr: string, status: string) => {
     if (status !== 'active') return 100;
     if (now === 0) return 0;
@@ -264,7 +307,7 @@ export default function InvestmentsClient({
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
-            <option value="early_termination_pending">Maturity Pending</option>
+            <option value="early_termination_pending">Termination Pending</option>
             <option value="early_terminated">Early Terminated</option>
           </select>
         </div>
@@ -341,11 +384,21 @@ export default function InvestmentsClient({
                           ? 'bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400'
                           : 'bg-destructive/10 border border-destructive/20 text-destructive'
                       }`}>
-                        {inv.status === 'early_termination_pending' ? 'Maturity Pending' : inv.status}
+                        {inv.status === 'early_termination_pending' ? 'Termination Pending' : inv.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        {inv.status === 'early_termination_pending' && (
+                          <button
+                            onClick={() => handleApproveTermination(inv)}
+                            title="Approve early termination request"
+                            className="px-2 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-[10px] rounded-lg flex items-center gap-1 transition-all shadow-md shadow-emerald-500/10"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Approve</span>
+                          </button>
+                        )}
                         <button 
                           onClick={() => {
                             setSelectedInv(inv);
@@ -455,7 +508,7 @@ export default function InvestmentsClient({
                 >
                   <option value="active">Active (Accruing yield)</option>
                   <option value="completed">Completed (Matured)</option>
-                  <option value="early_termination_pending">Maturity Pending</option>
+                  <option value="early_termination_pending">Termination Pending</option>
                 </select>
               </div>
 
@@ -518,7 +571,7 @@ export default function InvestmentsClient({
                 >
                   <option value="active">Active</option>
                   <option value="completed">Completed</option>
-                  <option value="early_termination_pending">Maturity Pending</option>
+                  <option value="early_termination_pending">Termination Pending</option>
                   <option value="early_terminated">Early Terminated</option>
                 </select>
               </div>
