@@ -27,6 +27,10 @@ function SignUpForm() {
     setLoading(true);
     setError(null);
 
+    const redirectTo = typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/callback`
+      : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`;
+
     // Call Supabase signup and pass custom metadata
     const { error: signUpError } = await supabase.auth.signUp({
       email,
@@ -38,6 +42,7 @@ function SignUpForm() {
           phone: phone,
           referred_by: referredBy || null,
         },
+        emailRedirectTo: redirectTo,
       },
     });
 
