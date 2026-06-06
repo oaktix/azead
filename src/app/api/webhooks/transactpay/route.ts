@@ -17,26 +17,55 @@ export async function POST(request: Request) {
     const payload = JSON.parse(bodyText);
     const { event, data } = payload;
 
-    // Handle payment.success event
-    if (event === 'payment.success') {
-      const { reference, amount, status, metadata } = data;
-      const userId = metadata?.userId;
+    console.log('Transactpay webhook received:', event, JSON.stringify(data, null, 2));
 
-      if (!userId || !reference || !amount) {
-        return NextResponse.json({ error: 'Missing webhook fields' }, { status: 400 });
+    // Handle successful payment events (Transactpay may use different event names)
+    const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
+    if (successEvents.includes(event)) {
+      const reference = data?.reference || data?.order_reference;
+      const amount = data?.amount || data?.order?.amount;
+      const txStatus = (data?.status || '').toLowerCase();
+
+      if (!reference) {
+        return NextResponse.json({ error: 'Missing reference in webhook' }, { status: 400 });
       }
 
-      if (status !== 'success') {
-        return NextResponse.json({ message: 'Transaction status not success' }, { status: 200 });
+      if (txStatus === 'failed' || txStatus === 'cancelled') {
+        return NextResponse.json({ message: 'Transaction not successful, skipping' }, { status: 200 });
       }
 
-      // Initialize admin client to run database procedure
+      // Initialize admin client
       const supabase = createAdminClient();
 
-      // Call PL/pgSQL database function to credit wallet atomically and prevent duplicates
+      // Look up the deposit record by reference to get the user_id
+      const { data: deposit, error: lookupError } = await supabase
+        .from('deposits')
+        .select('user_id, status')
+        .eq('reference', reference)
+        .single();
+
+      if (lookupError || !deposit) {
+        console.error('Deposit not found for reference:', reference, lookupError);
+        return NextResponse.json({ error: 'Deposit record not found' }, { status: 404 });
+      }
+
+      // Prevent double-processing
+      if (deposit.status === 'completed') {
+        console.warn(`Deposit ${reference} already completed. Skipping.`);
+        return NextResponse.json({ success: true, processed: false, message: 'Already processed' });
+      }
+
+      const userId = deposit.user_id;
+      const creditAmount = Number(amount);
+
+      if (!creditAmount || creditAmount <= 0) {
+        return NextResponse.json({ error: 'Invalid amount in webhook' }, { status: 400 });
+      }
+
+      // Call PL/pgSQL database function to credit wallet atomically
       const { data: creditSuccess, error: rpcError } = await supabase.rpc('process_successful_deposit', {
         p_user_id: userId,
-        p_amount: Number(amount),
+        p_amount: creditAmount,
         p_reference: reference,
         p_raw_response: payload
       });
@@ -60,3 +89,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
+

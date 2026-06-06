@@ -89,8 +89,8 @@ export default function WalletClient({
       }
 
       if (resData.checkoutUrl) {
-        // Redirect to Transactpay sandbox or actual checkout
-        router.push(resData.checkoutUrl);
+        // Redirect to external Transactpay checkout page
+        window.location.href = resData.checkoutUrl;
       } else {
         throw new Error('No checkout URL received');
       }

@@ -38,7 +38,6 @@ export async function POST(request: Request) {
 
     // Initialize Transactpay payment session
     const checkoutUrl = await TransactpayService.initializePayment({
-      userId: user.id,
       email: user.email!,
       amount,
       reference

@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 
 interface InitializePaymentParams {
-  userId: string;
   email: string;
   amount: number;
   reference: string;
@@ -22,42 +21,72 @@ export interface WebhookPayload {
 
 /**
  * Utility to integrate with Transactpay payment flows.
+ * Docs: https://payment-api-service.transactpay.ai
  */
 export class TransactpayService {
-  private static API_URL = 'https://api.transactpay.com/v1'; // Dummy Transactpay API URL
+  private static API_URL = 'https://payment-api-service.transactpay.ai';
 
   /**
-   * Initializes a payment session on Transactpay.
-   * Returns a checkout URL. If credentials are dummy, returns a local mock checkout URL.
+   * Creates an order on Transactpay and returns the checkout URL
+   * that the user should be redirected to.
    */
-  static async initializePayment({ userId, email, amount, reference }: InitializePaymentParams): Promise<string> {
-    const secretKey = process.env.TRANSACTPAY_SECRET_KEY;
-    
-    if (!secretKey) {
-      throw new Error('TRANSACTPAY_SECRET_KEY is not configured.');
+  static async initializePayment({ email, amount, reference }: InitializePaymentParams): Promise<string> {
+    const publicKey = process.env.TRANSACTPAY_PUBLIC_KEY;
+    const encryptionKey = process.env.TRANSACTPAY_ENCRYPTION_KEY;
+
+    if (!publicKey) {
+      throw new Error('TRANSACTPAY_PUBLIC_KEY is not configured.');
+    }
+    if (!encryptionKey) {
+      throw new Error('TRANSACTPAY_ENCRYPTION_KEY is not configured.');
     }
 
+    // Split email to approximate first/last name for the customer object
+    const nameParts = email.split('@')[0].split(/[._-]/);
+    const firstName = nameParts[0] || 'Customer';
+    const lastName = nameParts.length > 1 ? nameParts[1] : 'User';
+
+    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet/callback`;
+
+    const payload = {
+      customer: {
+        firstname: firstName,
+        lastname: lastName,
+        mobile: '',
+        country: 'NG',
+        email,
+      },
+      order: {
+        amount,
+        reference,
+        description: `Wallet deposit – ${reference}`,
+        currency: 'NGN',
+      },
+      payment: {
+        RedirectUrl: callbackUrl,
+      },
+    };
+
     try {
-      const response = await fetch(`${this.API_URL}/payments/initialize`, {
+      const response = await fetch(`${this.API_URL}/payment/order/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${secretKey}`,
+          'api-key': publicKey,
+          'encryption-key': encryptionKey,
         },
-        body: JSON.stringify({
-          amount: amount * 100, // Transactpay might expect amount in kobo, standard for Nigerian gateways
-          email,
-          reference,
-          callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet/callback`,
-          metadata: { userId },
-        }),
+        body: JSON.stringify(payload),
       });
 
       const resData = await response.json();
+
+      console.log('Transactpay order/create response:', JSON.stringify(resData, null, 2));
+
       if (resData.status && resData.data?.checkout_url) {
         return resData.data.checkout_url;
       }
-      throw new Error(resData.message || 'Transactpay initialization failed');
+
+      throw new Error(resData.message || 'Transactpay order creation failed');
     } catch (error) {
       console.error('Transactpay initialization error:', error);
       throw error;
