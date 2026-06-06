@@ -236,8 +236,8 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-heading">Users & Staff</h1>
-          <p className="text-xs text-slate-400 mt-1">Manage investor accounts, administrative roles, KYC statuses, and wallet ledger overrides.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Users & Staff</h1>
+          <p className="text-xs text-muted mt-1">Manage investor accounts, administrative roles, KYC statuses, and wallet ledger overrides.</p>
         </div>
 
         <button 
@@ -342,7 +342,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                   <td className="py-4 pr-2">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-input border border-border flex items-center justify-center font-bold text-emerald-400 text-xs flex-shrink-0 uppercase">
-                        {user.first_name[0]}{user.last_name[0]}
+                        {(user.first_name?.[0] || '') + (user.last_name?.[0] || '') || 'U'}
                       </div>
                       <div className="min-w-0">
                         <span className="block font-bold text-foreground truncate">{user.first_name} {user.last_name}</span>
@@ -360,7 +360,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                   <td className="py-4">
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                       user.role === 'admin' 
-                        ? 'bg-purple-950/40 border border-purple-500/20 text-purple-400' 
+                        ? 'bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400' 
                         : 'bg-input border border-border text-muted'
                     }`}>
                       {user.role}
