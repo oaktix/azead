@@ -149,10 +149,10 @@ export async function POST(request: Request) {
 
     const supabase = createAdminClient();
 
-    // --- Look up the deposit record by reference to get the user_id ---
+    // --- Look up the deposit record by reference to get the user_id AND the original amount ---
     const { data: deposit, error: lookupError } = await supabase
       .from('deposits')
-      .select('id, user_id, status')
+      .select('id, user_id, amount, status')
       .eq('reference', reference)
       .maybeSingle(); // Use maybeSingle so it doesn't error when no row found
 
@@ -176,10 +176,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, processed: false, message: 'Already processed' });
     }
 
+    // --- CRITICAL: Use the deposit record amount from the database, NOT the webhook payload ---
+    // Transactpay's totalAmountCharged includes gateway fees which inflates the credited amount.
+    // The deposit.amount is the original user-requested amount saved at initialization time.
+    const creditAmount = deposit ? Number(deposit.amount) : amount;
+
+    if (creditAmount <= 0) {
+      console.log(`Skipping webhook: creditAmount resolved to ${creditAmount} for reference ${reference}`);
+      return NextResponse.json({ success: true, message: 'Skipping: amount is zero or negative' });
+    }
+
+    console.log(`Webhook credit: deposit.amount=${deposit?.amount}, webhook.amount=${amount}, using=${creditAmount}`);
+
     // --- Call the atomic PL/pgSQL function to credit the wallet ---
     const { data: creditSuccess, error: rpcError } = await supabase.rpc('process_successful_deposit', {
       p_user_id: resolvedUserId,
-      p_amount: amount,
+      p_amount: creditAmount,
       p_reference: reference,
       p_raw_response: payload,
     });
@@ -189,7 +201,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: rpcError.message }, { status: 500 });
     }
 
-    console.log(`Deposit ${reference} processed successfully for user ${resolvedUserId}. Amount: ${amount}`);
+    console.log(`Deposit ${reference} processed successfully for user ${resolvedUserId}. Amount: ${creditAmount}`);
     return NextResponse.json({ success: true, processed: creditSuccess });
 
   } catch (error: unknown) {
