@@ -31,10 +31,10 @@ export class TransactpayService {
    * Returns a checkout URL. If credentials are dummy, returns a local mock checkout URL.
    */
   static async initializePayment({ userId, email, amount, reference }: InitializePaymentParams): Promise<string> {
-    const apiKey = process.env.TRANSACTPAY_API_KEY;
+    const secretKey = process.env.TRANSACTPAY_SECRET_KEY;
     
     // In test/local mode without valid keys, we redirect to our built-in mock checkout page
-    if (!apiKey || apiKey.includes('dummy') || apiKey.includes('tp_api_key_test')) {
+    if (!secretKey || secretKey.includes('dummy') || secretKey.includes('tp_secret_key_test')) {
       const mockCheckoutUrl = `/dashboard/wallet/checkout?reference=${reference}&amount=${amount}&userId=${userId}&email=${encodeURIComponent(email)}`;
       return mockCheckoutUrl;
     }
@@ -44,7 +44,7 @@ export class TransactpayService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${secretKey}`,
         },
         body: JSON.stringify({
           amount: amount * 100, // Transactpay might expect amount in kobo, standard for Nigerian gateways
@@ -70,7 +70,7 @@ export class TransactpayService {
    * Verifies the webhook signature from Transactpay.
    */
   static verifySignature(body: string, signature: string): boolean {
-    const secret = process.env.TRANSACTPAY_WEBHOOK_SECRET || 'tp_webhook_secret_12345';
+    const secret = process.env.TRANSACTPAY_SECRET_KEY || 'tp_secret_key_test_12345';
     
     // For local mock verification, if signature is "mock-signature", allow it
     if (signature === 'mock-signature') {
