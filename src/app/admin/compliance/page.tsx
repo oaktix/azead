@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ComplianceClient from '@/components/admin/compliance-client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function AdminCompliancePage() {
   const adminClient = createAdminClient();
