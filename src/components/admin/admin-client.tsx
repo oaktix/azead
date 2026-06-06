@@ -89,6 +89,10 @@ export default function AdminClient({
   const [panicState, setPanicState] = useState(panicPaused);
   const [cronResult, setCronResult] = useState<string | null>(null);
 
+  // Preview Modal States
+  const [activePreviewDoc, setActivePreviewDoc] = useState<KycDoc | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
   const formatNaira = (val: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -273,10 +277,30 @@ export default function AdminClient({
                             {doc.profiles?.first_name} {doc.profiles?.last_name}
                           </td>
                           <td className="py-3 font-mono text-[10px] text-slate-400">
-                            ID: {doc.id_number}
-                            <a href={doc.id_document_url} target="_blank" rel="noreferrer" className="ml-2 text-emerald-400 hover:underline inline-flex items-center gap-0.5">
-                              View ID <ExternalLink className="w-3 h-3" />
-                            </a>
+                            <div className="flex items-center gap-3">
+                              <div 
+                                onClick={() => {
+                                  setActivePreviewDoc(doc);
+                                  setIsPreviewOpen(true);
+                                }}
+                                className="w-12 h-10 rounded border border-slate-800 bg-slate-950 overflow-hidden flex-shrink-0 cursor-pointer hover:border-emerald-500/50 transition-colors flex items-center justify-center"
+                                title="Click to preview ID"
+                              >
+                                <img src={doc.id_document_url} alt="ID Document Thumbnail" className="w-full h-full object-cover" />
+                              </div>
+                              <div>
+                                <span className="block text-xs font-semibold text-slate-200">ID: {doc.id_number}</span>
+                                <button 
+                                  onClick={() => {
+                                    setActivePreviewDoc(doc);
+                                    setIsPreviewOpen(true);
+                                  }}
+                                  className="text-[10px] text-emerald-400 hover:underline flex items-center gap-0.5 mt-0.5"
+                                >
+                                  Preview Document <ExternalLink className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            </div>
                           </td>
                           <td className="py-3 text-right">
                             {isRejecting ? (
@@ -491,6 +515,123 @@ export default function AdminClient({
         </div>
 
       </div>
+
+      {/* Verification Preview Modal */}
+      {isPreviewOpen && activePreviewDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => {
+                setIsPreviewOpen(false);
+                setActivePreviewDoc(null);
+                setKycRejectId(null);
+                setKycReason('');
+              }}
+              title="Close Modal"
+              aria-label="Close Modal"
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div>
+              <h3 className="text-lg font-bold text-white font-heading">KYC Verification Review</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Please examine the uploaded document carefully to ensure identity clarity and matching numbers.
+              </p>
+            </div>
+
+            {/* Document display */}
+            <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center min-h-[300px] p-2">
+              <img 
+                src={activePreviewDoc.id_document_url} 
+                alt="Uploaded ID Document" 
+                className="max-h-[400px] object-contain rounded" 
+              />
+            </div>
+
+            {/* Applicant details */}
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-950 border border-slate-900 font-mono text-xs">
+              <div>
+                <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-wider">Applicant</span>
+                <span className="text-slate-200 font-bold mt-1 block">
+                  {activePreviewDoc.profiles?.first_name} {activePreviewDoc.profiles?.last_name}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-wider">ID / NIN Document Number</span>
+                <span className="text-emerald-400 font-bold mt-1 block">
+                  {activePreviewDoc.id_number}
+                </span>
+              </div>
+            </div>
+
+            {/* Modal actions */}
+            <div className="flex flex-col gap-4 border-t border-slate-900 pt-4">
+              {kycRejectId === activePreviewDoc.id ? (
+                <div className="space-y-3">
+                  <span className="block text-xs font-semibold text-slate-300">Explain rejection reason:</span>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Image blurry or document number mismatch"
+                      value={kycReason}
+                      onChange={(e) => setKycReason(e.target.value)}
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-red-500"
+                    />
+                    <button 
+                      onClick={async () => {
+                        await handleProcessKYC(activePreviewDoc.id, activePreviewDoc.user_id, false);
+                        setIsPreviewOpen(false);
+                        setActivePreviewDoc(null);
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-slate-950 font-bold text-xs transition-colors"
+                    >
+                      Submit Rejection
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setKycRejectId(null);
+                        setKycReason('');
+                      }}
+                      className="px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setKycRejectId(activePreviewDoc.id)}
+                    disabled={kycLoadingId !== null}
+                    className="flex-1 py-3 rounded-xl bg-red-950/40 border border-red-500/20 text-red-400 hover:bg-red-950 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Reject Verification</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await handleProcessKYC(activePreviewDoc.id, activePreviewDoc.user_id, true);
+                      setIsPreviewOpen(false);
+                      setActivePreviewDoc(null);
+                    }}
+                    disabled={kycLoadingId !== null}
+                    className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    {kycLoadingId === activePreviewDoc.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    <span>Approve & Verify</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

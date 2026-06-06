@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ShieldCheck, 
@@ -8,7 +8,8 @@ import {
   Loader2, 
   CheckCircle2, 
   Upload, 
-  Clock 
+  Clock,
+  X
 } from 'lucide-react';
 
 interface KYCDetails {
@@ -51,6 +52,16 @@ export default function ProfileClient({
   const [kycLoading, setKycLoading] = useState(false);
   const [kycError, setKycError] = useState<string | null>(null);
   const [kycSuccess, setKycSuccess] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +93,10 @@ export default function ProfileClient({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
     }
   };
 
@@ -122,9 +136,14 @@ export default function ProfileClient({
 
       setKycSuccess(true);
       setSelectedFile(null);
+      setImagePreview(null);
+      setTimeout(() => {
+        setIsUploadModalOpen(false);
+        setKycSuccess(false);
+      }, 1500);
       router.refresh();
     } catch (err: unknown) {
-    const errorObj = err as Error;
+      const errorObj = err as Error;
       setKycError(errorObj.message || 'An unexpected error occurred.');
     } finally {
       setKycLoading(false);
@@ -259,7 +278,7 @@ export default function ProfileClient({
               </div>
             )}
 
-            {/* Upload form if not verified and not pending */}
+            {/* Upload trigger if not verified and not pending */}
             {(profile.kyc_status === 'pending' || profile.kyc_status === 'verified') ? (
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 font-mono text-[10px] space-y-2 text-slate-500">
                 <div className="flex justify-between">
@@ -272,39 +291,83 @@ export default function ProfileClient({
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleKYCSubmit} className="space-y-4">
-                {kycError && (
-                  <div className="p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-400 text-xs flex items-start space-x-2">
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                    <span>{kycError}</span>
-                  </div>
-                )}
+              <div className="p-6 rounded-xl bg-slate-950 border border-slate-900 text-center space-y-4">
+                <p className="text-xs text-slate-400 leading-normal">
+                  To comply with standard regulations, withdrawal privileges are restricted until identity validation is completed. Please upload a clear document image.
+                </p>
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="w-full py-3 rounded-xl bg-slate-100 hover:bg-white text-slate-950 font-bold text-xs transition-colors"
+                >
+                  {profile.kyc_status === 'rejected' ? 'Re-upload KYC Document' : 'Start Identity Verification'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
-                {kycSuccess && (
-                  <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 text-xs flex items-start space-x-2">
-                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                    <span>Documents submitted for verification!</span>
-                  </div>
-                )}
+      </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    ID Card or NIN Document Number
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={idNumber}
-                    onChange={(e) => setIdNumber(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-emerald-500"
-                    placeholder="e.g. 12345678901"
-                  />
+      {/* Upload Modal */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 my-8 animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => {
+                setIsUploadModalOpen(false);
+                setKycError(null);
+                setKycSuccess(false);
+              }}
+              title="Close Modal"
+              aria-label="Close Modal"
+              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div>
+              <h3 className="text-xl font-bold text-white font-heading">KYC Identity Verification</h3>
+              <p className="text-xs text-slate-400 mt-1">Upload a government issued identity card (NIN / Driver&apos;s license / Passport).</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-400 leading-normal">
+              <strong>Notice:</strong> This verification is NOT automatic. Once submitted, your ID image will be manually verified by our compliance and security team after careful review. Expected wait time: 2-6 hours.
+            </div>
+
+            <form onSubmit={handleKYCSubmit} className="space-y-4">
+              {kycError && (
+                <div className="p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-400 text-xs flex items-start space-x-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{kycError}</span>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Document Image Upload
-                  </label>
+              {kycSuccess && (
+                <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 text-xs flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>Documents submitted successfully! Awaiting manual review.</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  ID Card or NIN Document Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. 12345678901"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Document Image Upload
+                </label>
+                {!imagePreview ? (
                   <div className="relative border border-dashed border-slate-800 rounded-xl p-6 text-center hover:border-emerald-500/50 transition-colors bg-slate-950">
                     <input
                       title="ID Document Upload"
@@ -318,26 +381,61 @@ export default function ProfileClient({
                     />
                     <Upload className="w-6 h-6 text-slate-500 mx-auto mb-2" />
                     <span className="text-xs font-bold text-slate-400 block">
-                      {selectedFile ? selectedFile.name : 'Select ID Card Image'}
+                      Select ID Card Image
                     </span>
                     <span className="text-[9px] text-slate-600 mt-1 block">PNG, JPG or JPEG up to 5MB</span>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center max-h-48 p-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="ID Preview" 
+                        className="max-h-44 object-contain rounded" 
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 truncate max-w-[70%] font-mono">{selectedFile?.name}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="text-red-400 hover:text-red-300 font-bold"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUploadModalOpen(false);
+                    setKycError(null);
+                    setKycSuccess(false);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold text-xs transition-colors"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  disabled={kycLoading}
-                  className="w-full py-3 rounded-xl bg-slate-100 hover:bg-white text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                  disabled={kycLoading || kycSuccess}
+                  className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-2"
                 >
                   {kycLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                  <span>Submit Documents</span>
+                  <span>Submit for Review</span>
                 </button>
-              </form>
-            )}
+              </div>
+            </form>
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
