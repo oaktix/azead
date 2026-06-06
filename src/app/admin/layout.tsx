@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ShieldAlert, LogOut, ArrowLeft } from 'lucide-react';
+import AdminNav from '@/components/admin/admin-nav';
 
 export default async function AdminLayout({
   children,
@@ -56,10 +57,15 @@ export default async function AdminLayout({
         </div>
       </header>
 
-      {/* Main Admin Contents */}
-      <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-        {children}
-      </main>
+      {/* Main layout area with Sidebar */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        <AdminNav />
+        
+        {/* Main Admin Contents */}
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto w-full">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

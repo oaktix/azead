@@ -29,45 +29,17 @@ export default async function AdminPage() {
   const activeInvestmentsCount = activeInvestments?.length || 0;
   const activeInvestmentsSum = (activeInvestments || []).reduce((sum, i) => sum + Number(i.amount), 0);
 
-  // 4. Fetch pending KYC documents count and data
-  const { data: pendingKycDocs } = await adminClient
+  // 4. Fetch pending KYC documents count
+  const { count: pendingKycCount } = await adminClient
     .from('kyc_documents')
-    .select(`
-      id,
-      user_id,
-      id_number,
-      id_document_url,
-      status,
-      profiles (
-        first_name,
-        last_name
-      )
-    `)
-    .eq('status', 'pending')
-    .order('updated_at', { ascending: false });
-  const pendingKycCount = pendingKycDocs?.length || 0;
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending');
 
-  // 5. Fetch pending withdrawals count and data
-  const { data: pendingWithdrawals } = await adminClient
+  // 5. Fetch pending withdrawals count
+  const { count: pendingWithdrawalsCount } = await adminClient
     .from('withdrawals')
-    .select(`
-      id,
-      user_id,
-      amount,
-      fee,
-      payout_amount,
-      status,
-      bank_name,
-      account_number,
-      account_name,
-      profiles (
-        first_name,
-        last_name
-      )
-    `)
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false });
-  const pendingWithdrawalsCount = pendingWithdrawals?.length || 0;
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending');
 
   // 6. Fetch fail-safe status
   const { data: controls } = await adminClient
@@ -84,37 +56,6 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10);
 
-  // Parse types
-  const mappedKycDocs = (pendingKycDocs || []).map((doc: unknown) => {
-    const d = doc as { id: string; user_id: string; id_number: string; id_document_url: string; status: string; profiles: unknown };
-    const p = d.profiles as { first_name: string; last_name: string } | null;
-    return {
-      id: d.id,
-      user_id: d.user_id,
-      id_number: d.id_number,
-      id_document_url: d.id_document_url,
-      status: d.status,
-      profiles: p || { first_name: 'Unknown', last_name: 'Investor' }
-    };
-  });
-
-  const mappedWithdrawals = (pendingWithdrawals || []).map((wth: unknown) => {
-    const w = wth as { id: string; user_id: string; amount: string | number; fee: string | number; payout_amount: string | number; status: string; bank_name: string; account_number: string; account_name: string; profiles: unknown };
-    const p = w.profiles as { first_name: string; last_name: string } | null;
-    return {
-      id: w.id,
-      user_id: w.user_id,
-      amount: Number(w.amount),
-      fee: Number(w.fee),
-      payout_amount: Number(w.payout_amount),
-      status: w.status,
-      bank_name: w.bank_name,
-      account_number: w.account_number,
-      account_name: w.account_name,
-      profiles: p || { first_name: 'Unknown', last_name: 'Investor' }
-    };
-  });
-
   return (
     <AdminClient
       metrics={{
@@ -122,11 +63,9 @@ export default async function AdminPage() {
         totalWithdrawals,
         activeInvestmentsCount,
         activeInvestmentsSum,
-        pendingKycCount,
-        pendingWithdrawalsCount,
+        pendingKycCount: pendingKycCount || 0,
+        pendingWithdrawalsCount: pendingWithdrawalsCount || 0,
       }}
-      kycDocs={mappedKycDocs}
-      withdrawals={mappedWithdrawals}
       panicPaused={panicPaused}
       auditLogs={auditLogs || []}
     />
