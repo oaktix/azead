@@ -186,6 +186,17 @@ alter table public.liquidity_controls enable row level security;
 alter table public.admin_logs enable row level security;
 alter table public.notifications enable row level security;
 
+-- HELPER FUNCTION FOR RLS (Prevents infinite recursion on profiles table)
+create or replace function public.is_admin()
+returns boolean security definer as $$
+begin
+    return exists (
+        select 1 from public.profiles
+        where id = auth.uid() and role = 'admin'
+    );
+end;
+$$ language plpgsql;
+
 -- RLS POLICIES FOR PROFILES
 create policy "Users can view their own profile" on public.profiles
     for select using (auth.uid() = id);
@@ -194,24 +205,14 @@ create policy "Users can update their own profile fields" on public.profiles
     for update using (auth.uid() = id);
 
 create policy "Admins can do everything on profiles" on public.profiles
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR WALLETS
 create policy "Users can view their own wallet" on public.wallets
     for select using (auth.uid() = user_id);
 
 create policy "Admins can view all wallets" on public.wallets
-    for select using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for select using (public.is_admin());
 
 -- RLS POLICIES FOR WALLET TRANSACTIONS
 create policy "Users can view their own wallet transactions" on public.wallet_transactions
@@ -223,12 +224,7 @@ create policy "Users can view their own wallet transactions" on public.wallet_tr
     );
 
 create policy "Admins can view all wallet transactions" on public.wallet_transactions
-    for select using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for select using (public.is_admin());
 
 -- RLS POLICIES FOR KYC DOCUMENTS
 create policy "Users can view their own KYC docs" on public.kyc_documents
@@ -241,36 +237,21 @@ create policy "Users can update their own pending KYC docs" on public.kyc_docume
     for update using (auth.uid() = user_id and status = 'pending');
 
 create policy "Admins can do everything on KYC docs" on public.kyc_documents
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR INVESTMENT PACKAGES
 create policy "Anyone can view active investment packages" on public.investment_packages
     for select using (is_active = true);
 
 create policy "Admins can do everything on investment packages" on public.investment_packages
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR INVESTMENTS
 create policy "Users can view their own investments" on public.investments
     for select using (auth.uid() = user_id);
 
 create policy "Admins can do everything on investments" on public.investments
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR WITHDRAWALS
 create policy "Users can view their own withdrawals" on public.withdrawals
@@ -280,12 +261,7 @@ create policy "Users can request withdrawals" on public.withdrawals
     for insert with check (auth.uid() = user_id);
 
 create policy "Admins can do everything on withdrawals" on public.withdrawals
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR DEPOSITS
 create policy "Users can view their own deposits" on public.deposits
@@ -295,12 +271,7 @@ create policy "Users can create deposit logs" on public.deposits
     for insert with check (auth.uid() = user_id);
 
 create policy "Admins can do everything on deposits" on public.deposits
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR REFERRALS
 create policy "Users can view referrals where they are involved" on public.referrals
@@ -310,54 +281,29 @@ create policy "Users can create referral mappings during signup" on public.refer
     for insert with check (auth.uid() = referee_id);
 
 create policy "Admins can view all referrals" on public.referrals
-    for select using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for select using (public.is_admin());
 
 -- RLS POLICIES FOR REFERRAL REWARDS
 create policy "Users can view their earned referral rewards" on public.referral_rewards
     for select using (auth.uid() = referrer_id);
 
 create policy "Admins can view all referral rewards" on public.referral_rewards
-    for select using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for select using (public.is_admin());
 
 -- RLS POLICIES FOR PLATFORM SETTINGS
 create policy "Anyone can view platform settings" on public.platform_settings
     for select using (true);
 
 create policy "Admins can manage platform settings" on public.platform_settings
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR LIQUIDITY CONTROLS
 create policy "Admins can manage liquidity controls" on public.liquidity_controls
-    for all using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for all using (public.is_admin());
 
 -- RLS POLICIES FOR ADMIN LOGS
 create policy "Admins can view admin logs" on public.admin_logs
-    for select using (
-        exists (
-            select 1 from public.profiles
-            where id = auth.uid() and role = 'admin'
-        )
-    );
+    for select using (public.is_admin());
 
 -- RLS POLICIES FOR NOTIFICATIONS
 create policy "Users can view their own notifications" on public.notifications
@@ -365,6 +311,7 @@ create policy "Users can view their own notifications" on public.notifications
 
 create policy "Users can update their own notifications (read status)" on public.notifications
     for update using (auth.uid() = user_id);
+
 
 
 -- PL/pgSQL ATOMIC LEDGER FUNCTIONS
