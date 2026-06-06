@@ -1,5 +1,8 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
+
+// Always fetch fresh data — never serve a cached wallet page
+export const revalidate = 0;
 import WalletClient from '@/components/dashboard/wallet-client';
 
 export default async function WalletPage() {

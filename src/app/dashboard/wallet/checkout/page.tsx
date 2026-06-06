@@ -19,23 +19,11 @@ function CheckoutForm() {
     setLoading(true);
     try {
       if (success) {
-        // Send request to our webhook endpoint with the mock signature
-        const response = await fetch('/api/webhooks/transactpay', {
+        // Use the same verify endpoint that the real callback page uses
+        const response = await fetch('/api/deposits/verify', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-transactpay-signature': 'mock-signature'
-          },
-          body: JSON.stringify({
-            event: 'payment.success',
-            data: {
-              reference,
-              amount,
-              status: 'success',
-              customer: { email },
-              metadata: { userId }
-            }
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reference, status: 'success' }),
         });
 
         const resData = await response.json();
@@ -45,7 +33,7 @@ function CheckoutForm() {
             router.push('/dashboard/wallet');
           }, 2000);
         } else {
-          alert('Webhook error: ' + (resData.error || 'Failed to credit wallet'));
+          alert('Error: ' + (resData.error || 'Failed to credit wallet'));
         }
       } else {
         setStatus('failed');
