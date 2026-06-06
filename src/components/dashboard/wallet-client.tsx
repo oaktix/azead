@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -12,7 +13,19 @@ import {
   Lock,
   ShieldCheck,
   X,
-  Copy
+  Copy,
+  Download,
+  Printer,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Gift,
+  ShieldAlert,
+  Filter,
+  Search,
+  BarChart3,
+  Zap
 } from 'lucide-react';
 
 interface Transaction {
@@ -37,7 +50,7 @@ export default function WalletClient({
   const searchParams = useSearchParams();
   
   const [balance, setBalance] = useState(initialBalance);
-  const [transactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState(initialTransactions);
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>(
     searchParams.get('action') === 'withdraw' ? 'withdraw' : 'deposit'
   );
@@ -60,6 +73,52 @@ export default function WalletClient({
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
 
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+
+  // Real-time notification
+  const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
+
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  // ─── Supabase Real-Time Listener ───
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const channel = supabase
+      .channel('user-wallet-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'wallet_transactions',
+        },
+        (payload) => {
+          const newTx = payload.new as Transaction;
+          // Add to front of list with animation trigger
+          setTransactions((prev) => [newTx, ...prev]);
+          setBalance((prev) => prev + Number(newTx.amount));
+          setRealtimeNotice(`New ${newTx.type.replace(/_/g, ' ')}: ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(newTx.amount)}`);
+          setTimeout(() => setRealtimeNotice(null), 5000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const copyToReference = (ref: string) => {
     navigator.clipboard.writeText(ref);
     setCopiedRef(true);
@@ -76,6 +135,97 @@ export default function WalletClient({
       style: 'currency',
       currency: 'NGN',
     }).format(val);
+  };
+
+  // ─── Analytics ───
+  const totalIn = useMemo(() =>
+    transactions.filter(t => Number(t.amount) > 0).reduce((s, t) => s + Number(t.amount), 0),
+    [transactions]
+  );
+  const totalOut = useMemo(() =>
+    transactions.filter(t => Number(t.amount) < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0),
+    [transactions]
+  );
+  const maxBar = Math.max(totalIn, totalOut, 1);
+
+  // ─── Filtered Transactions ───
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((tx) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery ||
+        tx.reference.toLowerCase().includes(q) ||
+        tx.description.toLowerCase().includes(q) ||
+        tx.type.toLowerCase().includes(q);
+
+      const matchesType = typeFilter === 'all' || tx.type === typeFilter;
+
+      let matchesDate = true;
+      if (startDate) matchesDate = matchesDate && new Date(tx.created_at) >= new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        matchesDate = matchesDate && new Date(tx.created_at) < end;
+      }
+
+      let matchesAmount = true;
+      const absAmt = Math.abs(Number(tx.amount));
+      if (minAmount) matchesAmount = matchesAmount && absAmt >= Number(minAmount);
+      if (maxAmount) matchesAmount = matchesAmount && absAmt <= Number(maxAmount);
+
+      return matchesSearch && matchesType && matchesDate && matchesAmount;
+    });
+  }, [transactions, searchQuery, typeFilter, startDate, endDate, minAmount, maxAmount]);
+
+  const hasActiveFilters = searchQuery || typeFilter !== 'all' || startDate || endDate || minAmount || maxAmount;
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setTypeFilter('all');
+    setStartDate('');
+    setEndDate('');
+    setMinAmount('');
+    setMaxAmount('');
+  };
+
+  // ─── CSV Export ───
+  const handleExportCSV = () => {
+    const params = new URLSearchParams();
+    params.set('scope', 'user');
+    if (typeFilter !== 'all') params.set('type', typeFilter);
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    if (searchQuery) params.set('search', searchQuery);
+    if (minAmount) params.set('minAmount', minAmount);
+    if (maxAmount) params.set('maxAmount', maxAmount);
+    window.open(`/api/ledger/export?${params.toString()}`, '_blank');
+  };
+
+  // ─── Print ───
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // ─── Type helpers ───
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'deposit': return <ArrowDownLeft className="w-3.5 h-3.5" />;
+      case 'withdrawal': return <ArrowUpRight className="w-3.5 h-3.5" />;
+      case 'investment_debit': return <TrendingDown className="w-3.5 h-3.5" />;
+      case 'investment_payout': return <TrendingUp className="w-3.5 h-3.5" />;
+      case 'referral_bonus': return <Gift className="w-3.5 h-3.5" />;
+      default: return <ShieldAlert className="w-3.5 h-3.5" />;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'deposit': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      case 'withdrawal': return 'text-red-400 bg-red-500/10 border-red-500/20';
+      case 'investment_debit': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+      case 'investment_payout': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+      case 'referral_bonus': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+      default: return 'text-muted bg-muted/10 border-border';
+    }
   };
 
   const handleDeposit = async (e: React.FormEvent) => {
@@ -175,9 +325,20 @@ export default function WalletClient({
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Wallet Ledger</h1>
-          <p className="text-xs text-muted mt-1">Fund your wallet or request manual withdrawals</p>
+          <p className="text-xs text-muted mt-1">Fund your wallet, request withdrawals, and track all financial activity</p>
         </div>
       </div>
+
+      {/* Real-time notification banner */}
+      {realtimeNotice && (
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold flex items-center gap-2 animate-in slide-in-from-top-2 fade-in duration-300">
+          <Zap className="w-4 h-4" />
+          <span>{realtimeNotice}</span>
+          <button onClick={() => setRealtimeNotice(null)} className="ml-auto p-0.5 rounded hover:bg-emerald-500/20 transition-colors" title="Dismiss notification">
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-5 gap-8">
         
@@ -384,6 +545,7 @@ export default function WalletClient({
 
         {/* Right Side: Ledger Balance & Statement */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Balance Card */}
           <div className="p-6 rounded-2xl bg-card border border-border shadow-xl text-center space-y-2.5 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto">
@@ -396,14 +558,159 @@ export default function WalletClient({
             </p>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-foreground font-heading px-1">Ledger Transaction Logs</h3>
-            <div className="p-5 rounded-2xl bg-card border border-border shadow-xl space-y-4 max-h-[360px] overflow-y-auto">
-              {transactions.length === 0 ? (
-                <p className="text-xs text-muted text-center py-6">No transactions recorded.</p>
+          {/* Cash Flow Analytics Bar */}
+          <div className="p-4 rounded-2xl bg-card border border-border shadow-md space-y-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-3.5 h-3.5 text-muted" />
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Cash Flow Summary</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-muted font-semibold w-[50px] shrink-0">Cash In</span>
+                <div className="flex-1 h-3 bg-secondary/40 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-700 bar-fill"
+                    {...{ style: { '--bar-w': `${Math.max(2, (totalIn / maxBar) * 100)}%` } as React.CSSProperties }}
+                  />
+                </div>
+                <span className="text-[9px] font-mono font-bold text-emerald-400 w-[80px] text-right shrink-0">
+                  {formatNaira(totalIn)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-muted font-semibold w-[50px] shrink-0">Cash Out</span>
+                <div className="flex-1 h-3 bg-secondary/40 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-500 rounded-full transition-all duration-700 bar-fill"
+                    {...{ style: { '--bar-w': `${Math.max(2, (totalOut / maxBar) * 100)}%` } as React.CSSProperties }}
+                  />
+                </div>
+                <span className="text-[9px] font-mono font-bold text-red-400 w-[80px] text-right shrink-0">
+                  {formatNaira(totalOut)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Ledger Logs Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-sm font-bold text-foreground font-heading">Ledger Transaction Logs</h3>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={handleExportCSV}
+                  className="p-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-muted hover:text-foreground transition-colors"
+                  title="Export as CSV"
+                >
+                  <Download className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search & Filters for Ledger */}
+            <div className="p-3 rounded-xl bg-card border border-border shadow-sm space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2 w-3 h-3 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-input border border-border rounded-lg pl-7 pr-3 py-1.5 text-[10px] text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  title="Filter type"
+                  className="bg-input border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground focus:outline-none focus:border-primary"
+                >
+                  <option value="all">All</option>
+                  <option value="deposit">Deposit</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="investment_debit">Invest</option>
+                  <option value="investment_payout">Payout</option>
+                  <option value="referral_bonus">Referral</option>
+                </select>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`p-1.5 rounded-lg border transition-all ${
+                    showFilters ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-secondary/40 border-border text-muted'
+                  }`}
+                  title="Advanced filters"
+                >
+                  <Filter className="w-3 h-3" />
+                </button>
+              </div>
+
+              {showFilters && (
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
+                  <div>
+                    <label htmlFor="user-filter-start-date" className="block text-[8px] text-muted font-bold uppercase mb-1">
+                      <Calendar className="w-2.5 h-2.5 inline mr-0.5" />From
+                    </label>
+                    <input id="user-filter-start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full bg-input border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground focus:outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <label htmlFor="user-filter-end-date" className="block text-[8px] text-muted font-bold uppercase mb-1">
+                      <Calendar className="w-2.5 h-2.5 inline mr-0.5" />To
+                    </label>
+                    <input id="user-filter-end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full bg-input border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground focus:outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <label className="block text-[8px] text-muted font-bold uppercase mb-1">
+                      <DollarSign className="w-2.5 h-2.5 inline mr-0.5" />Min ₦
+                    </label>
+                    <input type="number" placeholder="0" value={minAmount} onChange={(e) => setMinAmount(e.target.value)}
+                      className="w-full bg-input border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground font-mono focus:outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <label className="block text-[8px] text-muted font-bold uppercase mb-1">
+                      <DollarSign className="w-2.5 h-2.5 inline mr-0.5" />Max ₦
+                    </label>
+                    <input type="number" placeholder="∞" value={maxAmount} onChange={(e) => setMaxAmount(e.target.value)}
+                      className="w-full bg-input border border-border rounded-lg px-2 py-1.5 text-[10px] text-foreground font-mono focus:outline-none focus:border-primary" />
+                  </div>
+                  {hasActiveFilters && (
+                    <button onClick={clearFilters}
+                      className="col-span-2 text-[9px] font-bold text-red-500 hover:text-red-400 transition-colors py-1">
+                      Clear all filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Results Count */}
+            {hasActiveFilters && (
+              <div className="text-[9px] text-muted font-semibold px-1">
+                {filteredTransactions.length} of {transactions.length} records
+              </div>
+            )}
+
+            {/* Transaction List */}
+            <div className="p-5 rounded-2xl bg-card border border-border shadow-xl space-y-4 max-h-[400px] overflow-y-auto">
+              {filteredTransactions.length === 0 ? (
+                <div className="text-center py-8 space-y-2">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-secondary/40 border border-border flex items-center justify-center">
+                    <Search className="w-4 h-4 text-muted/50" />
+                  </div>
+                  <p className="text-xs font-bold text-foreground">No matching records</p>
+                  <p className="text-[10px] text-muted">
+                    {hasActiveFilters ? 'Try adjusting your filters.' : 'No transactions recorded yet.'}
+                  </p>
+                  {hasActiveFilters && (
+                    <button onClick={clearFilters} className="text-[10px] text-primary font-bold hover:underline">
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div className="space-y-4 divide-y divide-border">
-                  {transactions.map((tx, idx) => {
+                  {filteredTransactions.map((tx, idx) => {
                     const isCredit = Number(tx.amount) > 0;
                     const formattedDate = new Date(tx.created_at).toLocaleString();
                     
@@ -418,7 +725,7 @@ export default function WalletClient({
                             {isCredit ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-xs font-semibold text-foreground capitalize truncate max-w-[125px]">{tx.description || tx.type.replace('_', ' ')}</div>
+                            <div className="text-xs font-semibold text-foreground capitalize truncate max-w-[125px]">{tx.description || tx.type.replace(/_/g, ' ')}</div>
                             <div className="text-[8px] text-muted mt-0.5 font-mono">{formattedDate}</div>
                           </div>
                         </div>
@@ -427,8 +734,8 @@ export default function WalletClient({
                           <div className={`text-xs font-bold font-mono ${isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
                             {isCredit ? '+' : ''}{formatNaira(tx.amount).replace('.00', '')}
                           </div>
-                          <span className="text-[8px] font-mono text-muted uppercase bg-secondary px-1.5 py-0.5 rounded border border-border mt-0.5 inline-block">
-                            {tx.type}
+                          <span className={`text-[8px] font-mono uppercase px-1.5 py-0.5 rounded border mt-0.5 inline-block ${getTypeColor(tx.type)}`}>
+                            {tx.type.replace(/_/g, ' ')}
                           </span>
                         </div>
                       </div>
@@ -466,27 +773,50 @@ export default function WalletClient({
         </div>
       )}
 
-      {/* User Transaction Details Modal */}
+      {/* ====== USER TRANSACTION RECEIPT MODAL ====== */}
       {selectedTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-250">
-          <div className="w-full max-w-sm p-6 rounded-3xl bg-card border border-border shadow-2xl space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-250 no-print">
+          <div 
+            ref={receiptRef}
+            className="w-full max-w-sm p-6 rounded-3xl bg-card border border-border shadow-2xl space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-200 print-receipt"
+          >
+            {/* Watermark */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] select-none">
+              <span className="text-[60px] font-black font-heading text-foreground tracking-widest rotate-[-30deg]">AZEAD</span>
+            </div>
+
             {/* Modal Header */}
-            <div className="flex justify-between items-center pb-2 border-b border-border">
+            <div className="flex justify-between items-center pb-2 border-b border-border relative z-10">
               <div>
                 <h3 className="text-sm font-bold text-foreground font-heading">Transaction Receipt</h3>
                 <p className="text-[9px] text-muted font-mono uppercase tracking-wider mt-0.5">ID: {selectedTx.id}</p>
               </div>
-              <button 
-                onClick={() => setSelectedTx(null)}
-                className="p-1 rounded-lg bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
-                title="Close receipt"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button 
+                  onClick={handlePrint}
+                  className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                  title="Print receipt"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  onClick={() => setSelectedTx(null)}
+                  className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                  title="Close receipt"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Receipt Amount Header */}
-            <div className="text-center py-6 bg-secondary/20 rounded-2xl border border-border relative">
+            <div className="text-center py-6 bg-secondary/20 rounded-2xl border border-border relative z-10">
+              <div className="absolute top-2 right-2">
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border flex items-center gap-1 w-fit ${getTypeColor(selectedTx.type)}`}>
+                  {getTypeIcon(selectedTx.type)}
+                  <span>{selectedTx.type.replace(/_/g, ' ')}</span>
+                </span>
+              </div>
               <span className="text-[10px] text-muted uppercase tracking-wider font-bold block mb-1">Transaction Value</span>
               <div className={`text-2xl font-black font-mono tracking-tight ${Number(selectedTx.amount) >= 0 ? 'text-emerald-400' : 'text-foreground'}`}>
                 {Number(selectedTx.amount) >= 0 ? '+' : ''}{formatNaira(selectedTx.amount)}
@@ -494,10 +824,10 @@ export default function WalletClient({
             </div>
 
             {/* Audit Properties */}
-            <div className="space-y-4 text-xs">
+            <div className="space-y-4 text-xs relative z-10">
               <div className="grid grid-cols-3 py-2 border-b border-border/50">
                 <span className="text-muted font-semibold">Classification</span>
-                <span className="col-span-2 text-foreground font-bold text-right uppercase tracking-wider font-mono text-[10px]">{selectedTx.type.replace('_', ' ')}</span>
+                <span className="col-span-2 text-foreground font-bold text-right uppercase tracking-wider font-mono text-[10px]">{selectedTx.type.replace(/_/g, ' ')}</span>
               </div>
               <div className="grid grid-cols-3 py-2 border-b border-border/50 items-center">
                 <span className="text-muted font-semibold">Reference</span>
@@ -505,7 +835,7 @@ export default function WalletClient({
                   <span className="text-foreground font-mono font-bold">{selectedTx.reference}</span>
                   <button 
                     onClick={() => copyToReference(selectedTx.reference)}
-                    className="p-1 rounded bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors"
+                    className="p-1 rounded bg-secondary hover:bg-secondary/80 text-muted hover:text-foreground transition-colors no-print"
                     title="Copy reference code"
                   >
                     {copiedRef ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -519,15 +849,21 @@ export default function WalletClient({
               <div className="py-2 space-y-1">
                 <span className="text-muted font-semibold block">Memo Description</span>
                 <p className="p-3 bg-secondary/30 border border-border/80 rounded-xl text-foreground/95 font-sans leading-normal">
-                  {selectedTx.description || selectedTx.type.replace('_', ' ')}
+                  {selectedTx.description || selectedTx.type.replace(/_/g, ' ')}
                 </p>
               </div>
+            </div>
+
+            {/* Security stamp */}
+            <div className="flex items-center justify-center gap-2 text-[9px] text-muted/60 font-mono uppercase tracking-widest relative z-10 pt-2 border-t border-border/30">
+              <ShieldAlert className="w-3 h-3" />
+              <span>AZEAD • Wallet Receipt • Verified</span>
             </div>
 
             {/* Close action button */}
             <button
               onClick={() => setSelectedTx(null)}
-              className="w-full py-3 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-xs transition-all shadow-md"
+              className="w-full py-3 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-xs transition-all shadow-md relative z-10 no-print"
             >
               Close Receipt
             </button>

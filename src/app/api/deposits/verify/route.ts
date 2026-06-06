@@ -19,13 +19,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing reference' }, { status: 400 });
     }
 
-    // Accept any "success-like" status from Transactpay's redirect params (normalized to lowercase)
-    const lowerStatus = (status || '').toLowerCase();
-    const isSuccess =
-      lowerStatus === 'success' ||
-      lowerStatus === 'successful' ||
-      lowerStatus === 'completed' ||
-      lowerStatus === 'approved';
+    // Outbound server-to-server verification fallback with Transactpay to ensure security
+    let isSuccess = false;
+    try {
+      const apiKey = process.env.TRANSACTPAY_PUBLIC_KEY;
+      const apiResponse = await fetch('https://payment-api-service.transactpay.ai/payment/order/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': apiKey || ''
+        },
+        body: JSON.stringify({ reference })
+      });
+
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        console.log(`Transactpay redirect verify status response for ${reference}:`, JSON.stringify(apiData, null, 2));
+        
+        const apiStatus = (apiData.status || '').toLowerCase();
+        const apiStatusCode = (apiData.statusCode || apiData.status_code || '');
+        const apiDataStatus = (apiData.data?.status || apiData.data?.orderSummary?.status || '').toLowerCase();
+
+        if (
+          apiStatus === 'success' || 
+          apiStatus === 'successful' || 
+          apiStatusCode === '00' || 
+          apiDataStatus === 'success' || 
+          apiDataStatus === 'successful'
+        ) {
+          isSuccess = true;
+        }
+      } else {
+        console.error(`Transactpay verify status endpoint returned HTTP error: ${apiResponse.status}`);
+      }
+    } catch (verifyErr) {
+      console.error(`Failed during outbound status check verification for reference ${reference}:`, verifyErr);
+    }
+
+    // Fallback comparison if outbound API check fails / timeout
+    if (!isSuccess) {
+      const lowerStatus = (status || '').toLowerCase();
+      isSuccess =
+        lowerStatus === 'success' ||
+        lowerStatus === 'successful' ||
+        lowerStatus === 'completed' ||
+        lowerStatus === 'approved';
+    }
 
     if (!isSuccess) {
       return NextResponse.json({

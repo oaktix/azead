@@ -119,3 +119,66 @@ h1, h2, h3, h4, h5, h6 {
 .accrual-glow {
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
+
+/* Dynamic bar fill — uses CSS custom property to avoid inline styles */
+.bar-fill {
+  width: var(--bar-w, 2%);
+}
+
+/* ──── Print Stylesheet ──── */
+@media print {
+  /* Hide everything except the receipt */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show only the printable receipt */
+  .print-receipt,
+  .print-receipt * {
+    visibility: visible !important;
+  }
+
+  .print-receipt {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 32px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Force dark text on print */
+  .print-receipt .text-foreground,
+  .print-receipt .text-emerald-400,
+  .print-receipt .text-red-400,
+  .print-receipt .text-amber-400,
+  .print-receipt .text-blue-400,
+  .print-receipt .text-purple-400,
+  .print-receipt .text-muted {
+    color: #1a1a1a !important;
+  }
+
+  /* Hide non-print elements */
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* Keep background colors for badges */
+  .print-receipt span[class*="bg-"] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+}
+

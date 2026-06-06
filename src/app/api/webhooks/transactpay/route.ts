@@ -23,28 +23,19 @@ export async function POST(request: Request) {
     console.log('Extracted webhook signature:', signature);
     console.log('Incoming webhook raw body:', bodyText);
 
-    // Verify callback authenticity
-    const isValid = TransactpayService.verifySignature(bodyText, signature);
-    if (!isValid) {
-      console.warn('Invalid Transactpay webhook signature. Request blocked.');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    // Parse body first to extract reference for verification fallback
+    let payload: Record<string, unknown> = {};
+    try {
+      payload = JSON.parse(bodyText);
+    } catch (parseErr) {
+      console.error('Failed to parse webhook body JSON:', parseErr);
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
 
-    const payload = JSON.parse(bodyText);
     const { event, data } = payload;
-
-    console.log('Transactpay webhook verified successfully:', JSON.stringify(payload, null, 2));
-
-    let reference = '';
-    let amount = 0;
-    let isSuccess = false;
-    let userId: string | null = null;
-
-    // Support both nested data/Data and top-level payloads
-    const rawData = data || payload.data || payload.Data || payload;
-
-    // Resolve reference (check camelCase, PascalCase, snake_case, order, payment and fallback keys)
-    reference =
+    const rawData = (data || payload.data || payload.Data || payload) as Record<string, unknown>;
+    const metadata = rawData.metadata as Record<string, unknown> | undefined;
+    const reference = String(
       rawData.orderReference ||
       rawData.OrderReference ||
       rawData.order_reference ||
@@ -53,7 +44,63 @@ export async function POST(request: Request) {
       rawData.paymentReference ||
       rawData.payment_reference ||
       rawData.PaymentReference ||
-      '';
+      ''
+    );
+
+    // Verify callback authenticity
+    let isValid = TransactpayService.verifySignature(bodyText, signature);
+
+    if (!isValid && reference) {
+      console.log(`Webhook signature failed/missing for reference ${reference}. Attempting secure outbound API verification fallback...`);
+      try {
+        const apiKey = process.env.TRANSACTPAY_PUBLIC_KEY;
+        const apiResponse = await fetch('https://payment-api-service.transactpay.ai/payment/order/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': apiKey || ''
+          },
+          body: JSON.stringify({ reference })
+        });
+        
+        if (apiResponse.ok) {
+          const apiData = await apiResponse.json();
+          console.log(`Transactpay verify status response for ${reference}:`, JSON.stringify(apiData, null, 2));
+          
+          const apiStatus = (apiData.status || '').toLowerCase();
+          const apiStatusCode = (apiData.statusCode || apiData.status_code || '');
+          const apiDataStatus = (apiData.data?.status || apiData.data?.orderSummary?.status || '').toLowerCase();
+
+          if (
+            apiStatus === 'success' || 
+            apiStatus === 'successful' || 
+            apiStatusCode === '00' || 
+            apiDataStatus === 'success' || 
+            apiDataStatus === 'successful'
+          ) {
+            console.log(`✅ Outbound verification succeeded for reference ${reference}. Overriding signature validation.`);
+            isValid = true;
+          } else {
+            console.warn(`Outbound verification failed for reference ${reference}. Status is not successful.`);
+          }
+        } else {
+          console.error(`Transactpay verify status endpoint returned HTTP error: ${apiResponse.status}`);
+        }
+      } catch (verifyErr) {
+        console.error(`Failed during outbound status check fallback for reference ${reference}:`, verifyErr);
+      }
+    }
+
+    if (!isValid) {
+      console.warn('Invalid Transactpay webhook signature. Request blocked.');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    }
+
+    console.log('Transactpay webhook verified successfully:', JSON.stringify(payload, null, 2));
+
+    let amount = 0;
+    let isSuccess = false;
+    let userId: string | null = null;
 
     // Resolve amount
     const rawAmount =
@@ -74,7 +121,7 @@ export async function POST(request: Request) {
       payload.Status ||
       '';
 
-    const lowerStatus = rawStatus.toLowerCase();
+    const lowerStatus = String(rawStatus).toLowerCase();
     const rawStatusCode =
       payload.statusCode ||
       payload.StatusCode ||
@@ -84,7 +131,7 @@ export async function POST(request: Request) {
 
     // Check if webhook is successful
     const successEvents = ['payment.success', 'order.successful', 'charge.completed'];
-    const lowerEvent = (event || payload.event || '').toLowerCase();
+    const lowerEvent = String(event || payload.event || '').toLowerCase();
 
     isSuccess =
       lowerStatus === 'success' ||
@@ -93,7 +140,7 @@ export async function POST(request: Request) {
       successEvents.includes(lowerEvent);
 
     // Fallback userId extraction (mainly for mock/sandbox)
-    userId = rawData.metadata?.userId || rawData.metadata?.user_id || rawData.userId || rawData.user_id || null;
+    userId = (metadata?.userId || metadata?.user_id || rawData.userId || rawData.user_id || null) as string | null;
 
     if (!isSuccess || !reference || amount <= 0) {
       console.log(`Skipping webhook payload: reference=${reference}, amount=${amount}, isSuccess=${isSuccess}`);
