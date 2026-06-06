@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { promises as fs } from 'fs';
+import { createAdminClient } from '@/lib/supabase/admin';
 import path from 'path';
-// Using native crypto API for UUID generation
 
 export async function POST(request: Request) {
   try {
@@ -25,25 +24,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'ID document picture is required' }, { status: 400 });
     }
 
-    // Process file upload: We'll store it locally in the public folder for easy local testing
+    // Process file upload: We'll upload it to Supabase Storage bucket 'kyc-documents'
     const filename = `${user.id}-${crypto.randomUUID().substring(0, 6)}${path.extname(file.name)}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure uploads directory exists
-    try {
-      await fs.access(uploadDir);
-    } catch {
-      await fs.mkdir(uploadDir, { recursive: true });
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    const adminClient = createAdminClient();
+
+    // Upload file to bucket
+    const { error: uploadError } = await adminClient
+      .storage
+      .from('kyc-documents')
+      .upload(filename, fileBuffer, {
+        contentType: file.type,
+        upsert: true
+      });
+
+    if (uploadError) {
+      throw uploadError;
     }
 
-    const filePath = path.join(uploadDir, filename);
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, fileBuffer);
-    
-    const idDocumentUrl = `/uploads/${filename}`;
+    // Get public URL
+    const { data: { publicUrl } } = adminClient
+      .storage
+      .from('kyc-documents')
+      .getPublicUrl(filename);
+
+    const idDocumentUrl = publicUrl;
 
     // Insert or update KYC document record
-    const { error: kycError } = await supabase
+    const { error: kycError } = await adminClient
       .from('kyc_documents')
       .upsert({
         user_id: user.id,
@@ -58,7 +67,7 @@ export async function POST(request: Request) {
     }
 
     // Set profile status to pending
-    const { error: profileError } = await supabase
+    const { error: profileError } = await adminClient
       .from('profiles')
       .update({ kyc_status: 'pending' })
       .eq('id', user.id);
@@ -74,4 +83,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
-;
