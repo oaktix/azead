@@ -19,13 +19,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing reference' }, { status: 400 });
     }
 
-    // Accept any "success-like" status from Transactpay's redirect params
+    // Accept any "success-like" status from Transactpay's redirect params (normalized to lowercase)
+    const lowerStatus = (status || '').toLowerCase();
     const isSuccess =
-      status === 'success' ||
-      status === 'successful' ||
-      status === 'Successful' ||
-      status === 'completed' ||
-      status === 'approved';
+      lowerStatus === 'success' ||
+      lowerStatus === 'successful' ||
+      lowerStatus === 'completed' ||
+      lowerStatus === 'approved';
 
     if (!isSuccess) {
       return NextResponse.json({

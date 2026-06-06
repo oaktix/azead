@@ -31,10 +31,12 @@ function CallbackContent() {
     searchParams.get('tx_ref') ||
     '';
 
+  const normalizedStatus = rawStatus.toLowerCase();
+
   const isFailedStatus =
-    rawStatus === 'failed' ||
-    rawStatus === 'cancelled' ||
-    rawStatus === 'canceled';
+    normalizedStatus === 'failed' ||
+    normalizedStatus === 'cancelled' ||
+    normalizedStatus === 'canceled';
 
   // Determine initial state based on parameters directly
   const initialVerifyState = (() => {
