@@ -10,56 +10,49 @@ function CallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [countdown, setCountdown] = useState(5);
-  const [verifyState, setVerifyState] = useState<VerifyState>('verifying');
-  const [creditedAmount, setCreditedAmount] = useState<number | null>(null);
-  const [errorMsg, setErrorMsg] = useState('');
-  const hasVerified = useRef(false);
 
-  // Transactpay appends these params on redirect
-  const rawStatus = searchParams.get('status') || '';
-  const reference =
-    searchParams.get('reference') ||
-    searchParams.get('order_reference') ||
-    searchParams.get('orderReference') ||
+  const rawStatus =
+    searchParams.get('status') ||
+    searchParams.get('paymentStatus') ||
+    searchParams.get('payment_status') ||
+    searchParams.get('transactionStatus') ||
+    searchParams.get('transaction_status') ||
     '';
 
-  const isSuccessStatus =
-    rawStatus === 'success' ||
-    rawStatus === 'successful' ||
-    rawStatus === 'Successful' ||
-    rawStatus === 'completed' ||
-    rawStatus === 'approved';
+  const reference =
+    searchParams.get('reference') ||
+    searchParams.get('orderReference') ||
+    searchParams.get('order_reference') ||
+    searchParams.get('paymentReference') ||
+    searchParams.get('payment_reference') ||
+    searchParams.get('transactionReference') ||
+    searchParams.get('transaction_reference') ||
+    searchParams.get('txRef') ||
+    searchParams.get('tx_ref') ||
+    '';
 
   const isFailedStatus =
     rawStatus === 'failed' ||
     rawStatus === 'cancelled' ||
     rawStatus === 'canceled';
 
-  useEffect(() => {
-    // Guard: only run once
-    if (hasVerified.current) return;
-    hasVerified.current = true;
-
-    // If there's no reference, we can't verify
+  // Determine initial state based on parameters directly
+  const initialVerifyState = (() => {
     if (!reference) {
-      setVerifyState(isFailedStatus ? 'failed' : 'pending');
-      return;
+      return isFailedStatus ? 'failed' : 'pending';
     }
-
-    // If the redirect says it failed, mark immediately
     if (isFailedStatus) {
-      setVerifyState('failed');
-      return;
+      return 'failed';
     }
+    return 'verifying';
+  })();
 
-    // Even if status is unknown/missing, still attempt verification —
-    // Transactpay sometimes redirects without a status param
-    verifyDeposit();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [verifyState, setVerifyState] = useState<VerifyState>(initialVerifyState);
+  const [creditedAmount, setCreditedAmount] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const hasVerified = useRef(false);
 
   const verifyDeposit = async () => {
-    setVerifyState('verifying');
     try {
       const res = await fetch('/api/deposits/verify', {
         method: 'POST',
@@ -92,6 +85,20 @@ function CallbackContent() {
       setVerifyState('failed');
     }
   };
+
+  useEffect(() => {
+    // Guard: only run once
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+
+    // Only verify if we initialized into 'verifying' state
+    if (verifyState === 'verifying') {
+      setTimeout(() => {
+        verifyDeposit();
+      }, 0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Start countdown only once verification is done
   useEffect(() => {
