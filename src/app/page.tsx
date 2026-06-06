@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { 
   TrendingUp, 
   Shield, 
@@ -17,16 +16,6 @@ import {
   Clock,
   AlertOctagon
 } from 'lucide-react';
-
-// Predefined packages from user request
-const PACKAGES = [
-  { name: 'Basic', amount: 500000, color: 'from-slate-700 to-slate-900', border: 'border-slate-800' },
-  { name: 'Standard', amount: 1000000, color: 'from-emerald-800 to-emerald-950', border: 'border-emerald-700/50' },
-  { name: 'Silver', amount: 5000000, color: 'from-blue-900 to-slate-950', border: 'border-blue-700/30' },
-  { name: 'Gold', amount: 10000000, color: 'from-amber-600/30 to-amber-950/70', border: 'border-amber-500/50' },
-  { name: 'Diamond', amount: 20000000, color: 'from-purple-900 to-slate-950', border: 'border-purple-800/40' },
-  { name: 'VIP', amount: 50000000, color: 'from-yellow-600/20 to-stone-900', border: 'border-yellow-500/40', tag: 'High Yield VIP' },
-];
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,10 +35,10 @@ export default function LandingPage() {
 
   // Progressive ticker emulation on the landing page hero for visual wow
   useEffect(() => {
-    const baseInterest = 125430.45;
+    const baseInterest = 250860.90;
     let current = baseInterest;
     const interval = setInterval(() => {
-      current += Math.random() * 0.15;
+      current += Math.random() * 0.25;
       setTickerInterest(current);
     }, 100);
     return () => clearInterval(interval);
@@ -81,7 +70,7 @@ export default function LandingPage() {
             </div>
             
             <nav className="hidden md:flex space-x-8 text-sm font-medium text-muted">
-              <a href="#packages" className="hover:text-foreground transition-colors">Packages</a>
+              <a href="#packages" className="hover:text-foreground transition-colors">Wealth Plan</a>
               <a href="#calculator" className="hover:text-foreground transition-colors">Calculator</a>
               <a href="#stats" className="hover:text-foreground transition-colors">Transparency</a>
               <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
@@ -89,15 +78,15 @@ export default function LandingPage() {
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/auth/signin" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+              <a href="/auth/signin" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
                 Sign In
-              </Link>
-              <Link href="/auth/signup" className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 dark:text-slate-950 font-bold transition-all hover:shadow-lg hover:shadow-emerald-500/10 text-sm">
+              </a>
+              <a href="/auth/signup" className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 dark:text-slate-950 font-bold transition-all hover:shadow-lg hover:shadow-emerald-500/10 text-sm">
                 Get Started
-              </Link>
+              </a>
             </div>
 
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-muted hover:text-foreground">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-muted hover:text-foreground" aria-label="Toggle Menu">
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -106,18 +95,18 @@ export default function LandingPage() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-border bg-background/95 backdrop-blur-lg px-4 pt-2 pb-6 space-y-3">
-            <a href="#packages" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Packages</a>
+            <a href="#packages" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Wealth Plan</a>
             <a href="#calculator" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Calculator</a>
             <a href="#stats" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Transparency</a>
             <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">FAQ</a>
             <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Contact</a>
             <div className="pt-4 flex flex-col space-y-2">
-              <Link href="/auth/signin" onClick={() => setMobileMenuOpen(false)} className="text-center py-2.5 text-sm font-semibold text-muted border border-border rounded-lg hover:bg-card transition-colors">
+              <a href="/auth/signin" onClick={() => setMobileMenuOpen(false)} className="text-center py-2.5 text-sm font-semibold text-muted border border-border rounded-lg hover:bg-card transition-colors">
                 Sign In
-              </Link>
-              <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)} className="text-center py-2.5 text-sm font-bold bg-emerald-500 text-slate-950 rounded-lg hover:bg-emerald-600 transition-colors">
+              </a>
+              <a href="/auth/signup" onClick={() => setMobileMenuOpen(false)} className="text-center py-2.5 text-sm font-bold bg-emerald-500 text-slate-950 rounded-lg hover:bg-emerald-600 transition-colors">
                 Get Started
-              </Link>
+              </a>
             </div>
           </div>
         )}
@@ -133,11 +122,8 @@ export default function LandingPage() {
         <div className="absolute top-1/6 left-1/4 w-[350px] h-[350px] bg-emerald-500/10 rounded-full blur-[90px] -z-10 animate-pulse duration-[6000ms]" />
         <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-teal-500/5 rounded-full blur-[100px] -z-10 animate-pulse duration-[8000ms]" />
         
-        {/* Glassmorphic card overlay inside background to give depth */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto max-w-6xl h-[60%] glass rounded-3xl opacity-10 blur-md pointer-events-none -z-10" />
-        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-8">
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-8 font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             <span>25.00% Guaranteed Annualized Yield</span>
           </div>
@@ -150,16 +136,16 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-20">
-            <Link href="/auth/signup" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 dark:text-slate-950 font-bold transition-all hover:shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2">
+            <a href="/auth/signup" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 dark:text-slate-950 font-bold transition-all hover:shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2">
               Create Investment Account <ArrowRight className="w-5 h-5" />
-            </Link>
+            </a>
             <a href="#calculator" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-card border border-border text-foreground hover:bg-muted/10 transition-colors flex items-center justify-center">
               Calculate Returns
             </a>
           </div>
 
           {/* Visual Accrual Widget */}
-          <div className="max-w-xl mx-auto p-6 rounded-2xl glass shadow-2xl relative">
+          <div className="max-w-xl mx-auto p-6 rounded-2xl glass shadow-2xl relative border border-border bg-card/50">
             <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-md bg-emerald-500/20 dark:bg-emerald-950 border border-emerald-500/35 text-[10px] text-emerald-700 dark:text-emerald-400 font-mono tracking-wider uppercase">
               Live Accrual Simulation
             </div>
@@ -171,10 +157,10 @@ export default function LandingPage() {
               {formatNaira(tickerInterest)}
             </div>
             <div className="w-full bg-slate-200 dark:bg-slate-950 rounded-full h-1.5 mb-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[45%] rounded-full animate-pulse" />
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[45%] rounded-full" />
             </div>
-            <div className="flex justify-between text-[10px] text-muted">
-              <span>Principal: ₦500,000.00</span>
+            <div className="flex justify-between text-[10px] text-muted font-mono">
+              <span>Principal: ₦1,000,000.00</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">Yield Rate: 25.00% APR</span>
             </div>
           </div>
@@ -188,7 +174,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading">
               Built For Serious Investors
             </h2>
-            <p className="mt-4 text-muted max-w-xl mx-auto">
+            <p className="mt-4 text-muted max-w-xl mx-auto text-sm">
               We leverage structural capital allocation algorithms and secure manual liquidity auditing to yield a premium 25% ARR.
             </p>
           </div>
@@ -199,7 +185,7 @@ export default function LandingPage() {
                 <Shield className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-heading">Secure Vault Infrastructure</h3>
-              <p className="text-sm text-muted leading-relaxed">
+              <p className="text-sm text-muted leading-relaxed font-sans">
                 Your investment capital is securely logged in double-entry atomic database systems. Rigorous compliance filters govern withdrawal allocations.
               </p>
             </div>
@@ -209,7 +195,7 @@ export default function LandingPage() {
                 <Clock className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-heading">Progressive Dashboard Accrual</h3>
-              <p className="text-sm text-muted leading-relaxed">
+              <p className="text-sm text-muted leading-relaxed font-sans">
                 Watch your capital appreciate live. Interest is accumulated to your user dashboard in real-time, matching your premium growth vector.
               </p>
             </div>
@@ -219,77 +205,108 @@ export default function LandingPage() {
                 <Lock className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2 font-heading">Lock-In Integrity</h3>
-              <p className="text-sm text-muted leading-relaxed">
-                Structured portfolios operate on a 1-year lock-in with clear rules. Early termination is protected via standard processing models.
+              <p className="text-sm text-muted leading-relaxed font-sans">
+                Structured portfolios operate on customized lock-in years with clear rules. Early termination is protected via standard processing models.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Packages Section */}
-      <section id="packages" className="py-24 border-t border-border">
+      {/* Unified Plan & Referral Promo Section */}
+      <section id="packages" className="py-24 border-t border-border bg-gradient-to-b from-transparent via-emerald-950/5 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading">
-              Select Your Investment Level
+              Azead Wealth Offerings
             </h2>
-            <p className="mt-4 text-muted max-w-xl mx-auto">
-              Our products are grouped into six distinct capital classes to match your balance tier.
+            <p className="mt-4 text-muted max-w-xl mx-auto text-sm">
+              We have unified our offerings into a single premium customizable plan that locks in 25.00% annual interest on your own terms, combined with a lucrative promotional affiliate system.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PACKAGES.map((pkg, idx) => (
-              <div 
-                key={idx} 
-                className={`rounded-2xl bg-card border border-border p-8 flex flex-col justify-between relative shadow-xl overflow-hidden group hover:border-emerald-500/30 transition-all`}
-              >
-                {pkg.tag && (
-                  <div className="absolute top-4 right-4 bg-emerald-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    {pkg.tag}
-                  </div>
-                )}
-                
-                <div>
-                  <h3 className="text-lg font-bold text-foreground font-heading">{pkg.name} Package</h3>
-                  <div className="mt-4 flex items-baseline text-foreground">
-                    <span className="text-3xl font-extrabold font-mono tracking-tight">
-                      {formatNaira(pkg.amount).replace('.00', '')}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-muted">Fixed purchase amount (NGN)</p>
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            
+            {/* Wealth Plan Card */}
+            <div className="rounded-2xl bg-card border border-emerald-500/20 p-8 flex flex-col justify-between relative shadow-xl overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">
+                  Guaranteed Rate
+                </span>
+                <h3 className="text-2xl font-bold text-foreground font-heading mt-4">Azead Wealth Plan</h3>
+                <p className="text-xs text-muted mt-2">
+                  Customize your principal starting from ₦1,000,000 and select your lock-in period up to 5 years.
+                </p>
 
-                  <ul className="mt-6 space-y-3.5 border-t border-border pt-6">
-                    <li className="flex items-center space-x-3 text-sm text-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
-                      <span>25.00% Annualized yield</span>
-                    </li>
-                    <li className="flex items-center space-x-3 text-sm text-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
-                      <span>1-Year Lock-in Duration</span>
-                    </li>
-                    <li className="flex items-center space-x-3 text-sm text-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
-                      <span>Maturity Reinvest/Payout options</span>
-                    </li>
-                    <li className="flex items-center space-x-3 text-sm text-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
-                      <span>Estimated Return: {formatNaira(pkg.amount * 0.25)}</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="mt-8">
-                  <Link 
-                    href={`/auth/signup?package=${pkg.name.toLowerCase()}`}
-                    className="w-full block text-center py-3 rounded-xl bg-background border border-border text-sm font-semibold text-foreground hover:bg-muted/10 transition-all group-hover:border-emerald-500/30"
-                  >
-                    Subscribe Level
-                  </Link>
-                </div>
+                <ul className="mt-8 space-y-4 border-t border-border pt-6 text-sm">
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    <span>Minimum principal: ₦1,000,000 NGN</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    <span>Duration options: 1, 2, 3, or 5 Years</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    <span>25.00% APR Fixed annual interest</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    <span>Compounding automatic rollover support</span>
+                  </li>
+                </ul>
               </div>
-            ))}
+
+              <div className="mt-8">
+                <a 
+                  href="/auth/signup"
+                  className="w-full block text-center py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm transition-all hover:shadow-lg hover:shadow-emerald-500/10"
+                >
+                  Start Wealth Building
+                </a>
+              </div>
+            </div>
+
+            {/* Referral Promo Card */}
+            <div className="rounded-2xl bg-card border border-amber-500/20 p-8 flex flex-col justify-between relative shadow-xl overflow-hidden group bg-gradient-to-br from-card via-card to-amber-500/5">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-500 font-bold uppercase tracking-wider font-mono">
+                  🔥 Promotional Bonus
+                </span>
+                <h3 className="text-2xl font-bold text-foreground font-heading mt-4">₦1,000,000 Extra Referral Reward</h3>
+                <p className="text-xs text-muted mt-2">
+                  Unlock extra payouts. Introduce double large-tier allocations to our platform and secure massive one-time incentives.
+                </p>
+
+                <ul className="mt-8 space-y-4 border-t border-border pt-6 text-sm">
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                    <span>Earn standard 2.5% on referee&apos;s first purchase</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                    <span>Refer <strong className="text-white">2 people</strong> who invest <strong className="text-white">₦20,000,000+</strong> each</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                    <span>Get <strong className="text-amber-400 font-mono">₦1,000,000 Extra cash</strong> paid directly to your wallet</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-8">
+                <a 
+                  href="/auth/signup"
+                  className="w-full block text-center py-4 rounded-xl bg-background border border-amber-500/35 hover:bg-muted/10 text-sm font-semibold text-foreground transition-all"
+                >
+                  Join Affiliate Program
+                </a>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -306,18 +323,18 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading mb-4">
                 Calculate Your Wealth Growth
               </h2>
-              <p className="text-muted leading-relaxed mb-6">
+              <p className="text-sm text-muted leading-relaxed mb-6">
                 Select your parameters to simulate your portfolio returns. Learn how reinvesting interest increases your yield over time.
               </p>
               
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 text-sm text-muted">
+              <div className="space-y-4 text-sm">
+                <div className="flex items-start space-x-3 text-muted">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                   <span>Returns locked and calculated in secure smart ledger systems.</span>
                 </div>
-                <div className="flex items-start space-x-3 text-sm text-muted">
+                <div className="flex items-start space-x-3 text-muted">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>Early termination available under strict penalty protocols.</span>
+                  <span>Early termination available under strict compliance penalty protocols.</span>
                 </div>
               </div>
             </div>
@@ -325,19 +342,23 @@ export default function LandingPage() {
             <div className="p-8 rounded-2xl bg-card border border-border shadow-xl">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                  <label htmlFor="landing-amount-input" className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                     Investment Capital (NGN)
                   </label>
                   <input 
+                    id="landing-amount-input"
                     type="number" 
                     value={calcAmount}
-                    onChange={(e) => setCalcAmount(Number(e.target.value))}
+                    onChange={(e) => setCalcAmount(Math.max(0, Number(e.target.value)))}
                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground font-mono focus:outline-none focus:border-emerald-500 transition-colors"
                     placeholder="Enter amount (e.g. 1000000)"
-                    min="100000"
+                    min="1000000"
                   />
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {[500000, 1000000, 5000000, 10000000].map((amt) => (
+                  {calcAmount < 1000000 && (
+                    <p className="text-[10px] text-red-500 mt-1">Minimum investment amount is ₦1,000,000</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {[1000000, 5000000, 10000000, 20000000, 50000000].map((amt) => (
                       <button 
                         key={amt}
                         onClick={() => setCalcAmount(amt)}
@@ -354,16 +375,19 @@ export default function LandingPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="duration-select" className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-                    Duration
+                  <label htmlFor="landing-duration-select" className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                    Duration Period
                   </label>
-                  <select id="duration-select" title="Duration" aria-label="Duration" value={calcDuration}
+                  <select 
+                    id="landing-duration-select"
+                    value={calcDuration}
                     onChange={(e) => setCalcDuration(Number(e.target.value))}
                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-emerald-500 transition-colors"
                   >
-                    <option value={1}>1 Year (Minimum lock-in)</option>
-                    <option value={2}>2 Years</option>
-                    <option value={3}>3 Years</option>
+                    <option value={1}>1 Year (365 Days)</option>
+                    <option value={2}>2 Years (730 Days)</option>
+                    <option value={3}>3 Years (1095 Days)</option>
+                    <option value={5}>5 Years (1825 Days)</option>
                   </select>
                 </div>
 
@@ -390,12 +414,12 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <Link 
+                <a 
                   href="/auth/signup" 
                   className="w-full block text-center py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 dark:text-slate-950 font-bold text-sm transition-all"
                 >
                   Invest This Principal
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -407,9 +431,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading">
-              Transparency Report
+              Platform Metrics
             </h2>
-            <p className="mt-4 text-muted max-w-xl mx-auto">
+            <p className="mt-4 text-muted max-w-xl mx-auto text-sm">
               Our audit logs and portfolio balances are transparently verified.
             </p>
           </div>
@@ -447,15 +471,15 @@ export default function LandingPage() {
           <div className="space-y-6">
             {[
               {
-                q: "What is the duration of the investment plans?",
-                a: "All packages operate on a minimum lock-in period of 1 year (365 days) from the purchase date to ensure liquidity optimization."
+                q: "What is the Azead Wealth Plan?",
+                a: "The Azead Wealth Plan is our unified investment product. It enables you to customize your investment amount starting from ₦1,000,000 NGN and lock it in for 1, 2, 3, or 5 years at a fixed interest rate of 25.00% APR."
               },
               {
                 q: "How does the live accrual ticker work?",
-                a: "Once subscribed, the interest rate is locked at 25% APR. The yield is calculated continuously and displays live on your user dashboard."
+                a: "Once subscribed, the interest rate is locked. The yield is calculated continuously and displays live on your user dashboard."
               },
               {
-                q: "Can I terminate my investment before 1 year?",
+                q: "Can I terminate my investment before maturity?",
                 a: "Yes. Early termination can be requested through the dashboard. However, a 10% penalty of the principal capital will be applied, and the payout requires a 30-day processing wait period."
               },
               {
@@ -464,12 +488,16 @@ export default function LandingPage() {
               },
               {
                 q: "Is there a referral reward system?",
-                a: "Yes, you receive a one-time 2.5% reward of the referee's investment package amount when they make their first purchase."
+                a: "Yes, you receive a standard one-time 2.5% reward of the referee's investment amount when they make their first purchase. In addition, we have an extra promotional referral bonus."
+              },
+              {
+                q: "How does the extra ₦1,000,000 referral promo bonus work?",
+                a: "If you refer at least 2 users who each invest ₦20,000,000 or more, you will receive a one-time extra promotional bonus of ₦1,000,000 paid directly to your wallet, on top of your standard 2.5% referral commissions!"
               }
             ].map((item, idx) => (
               <div key={idx} className="p-6 rounded-2xl bg-card border border-border">
                 <h4 className="text-base font-bold text-foreground mb-2 font-heading">{item.q}</h4>
-                <p className="text-sm text-muted leading-relaxed">{item.a}</p>
+                <p className="text-sm text-muted leading-relaxed font-sans">{item.a}</p>
               </div>
             ))}
           </div>
@@ -482,9 +510,9 @@ export default function LandingPage() {
           <div className="flex items-start space-x-3.5">
             <AlertOctagon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-bold uppercase tracking-wider">Risk Disclosure Statement</h4>
-              <p className="mt-1 text-xs text-muted leading-relaxed">
-                Investments in wealth generation packages involve structured capital operations. Past metrics are not indicators of future yield. All subscriptions are subject to our 1-year locking rules, 1.9% withdrawal processing fee, and 10% penalty on early terminations. Capital yields are processed securely and audited manually to ensure compliance.
+              <h4 className="text-sm font-bold uppercase tracking-wider font-mono">Risk Disclosure Statement</h4>
+              <p className="mt-1 text-xs text-muted leading-relaxed font-sans">
+                Investments in wealth generation packages involve structured capital operations. Past metrics are not indicators of future yield. All subscriptions are subject to our locking rules, 1.9% withdrawal processing fee, and 10% penalty on early terminations. Capital yields are processed securely and audited manually to ensure compliance.
               </p>
             </div>
           </div>
@@ -499,7 +527,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading mb-4">
                 Talk To Our Wealth Officers
               </h2>
-              <p className="text-muted leading-relaxed mb-8">
+              <p className="text-sm text-muted leading-relaxed mb-8 font-sans">
                 Do you have custom questions about institutional accounts or VIP allocations? Reach out directly.
               </p>
 
@@ -510,7 +538,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-xs text-muted">Phone Support</div>
-                    <div className="text-sm font-semibold text-foreground">+234 (0) 800-AZEAD-VIP</div>
+                    <div className="text-sm font-semibold text-foreground font-mono">+234 (0) 800-AZEAD-VIP</div>
                   </div>
                 </div>
 
@@ -520,7 +548,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-xs text-muted">Email Address</div>
-                    <div className="text-sm font-semibold text-foreground">support@azead.com</div>
+                    <div className="text-sm font-semibold text-foreground font-mono">support@azead.com</div>
                   </div>
                 </div>
 
@@ -530,7 +558,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-xs text-muted">Headquarters</div>
-                    <div className="text-sm font-semibold text-foreground">Banana Island, Lagos, Nigeria</div>
+                    <div className="text-sm font-semibold text-foreground font-sans">Banana Island, Lagos, Nigeria</div>
                   </div>
                 </div>
               </div>

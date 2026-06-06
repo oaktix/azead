@@ -3,16 +3,15 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Plus, 
   Edit, 
-  Trash2, 
   X, 
   Loader2, 
   Tag,
   CheckCircle,
   XCircle,
   Percent,
-  Calendar
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 
 interface PackageItem {
@@ -32,7 +31,6 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
   const router = useRouter();
 
   // Modals state
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Loading states
@@ -40,15 +38,6 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
 
   // Selected Package state
   const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(null);
-
-  // Form states - Create Package
-  const [createForm, setCreateForm] = useState({
-    name: '',
-    amount: '',
-    annual_interest_rate: '25.00',
-    duration_days: '365',
-    is_active: true
-  });
 
   // Form states - Edit Package
   const [editForm, setEditForm] = useState({
@@ -64,38 +53,6 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
       style: 'currency',
       currency: 'NGN',
     }).format(val);
-  };
-
-  const handleCreatePackage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await fetch('/api/admin/packages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: createForm.name,
-          amount: Number(createForm.amount),
-          annual_interest_rate: Number(createForm.annual_interest_rate),
-          duration_days: Number(createForm.duration_days),
-          is_active: createForm.is_active
-        }),
-      });
-
-      const resData = await response.json();
-      if (!response.ok) {
-        throw new Error(resData.error || 'Failed to create package');
-      }
-
-      setIsCreateOpen(false);
-      setCreateForm({ name: '', amount: '', annual_interest_rate: '25.00', duration_days: '365', is_active: true });
-      router.refresh();
-    } catch (err: unknown) {
-      const errorObj = err as Error;
-      alert(errorObj.message || 'An error occurred during package creation');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleEditPackage = async (e: React.FormEvent) => {
@@ -118,7 +75,7 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
 
       const resData = await response.json();
       if (!response.ok) {
-        throw new Error(resData.error || 'Failed to update package');
+        throw new Error(resData.error || 'Failed to update plan settings');
       }
 
       setIsEditOpen(false);
@@ -126,250 +83,121 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
       router.refresh();
     } catch (err: unknown) {
       const errorObj = err as Error;
-      alert(errorObj.message || 'An error occurred updating package');
+      alert(errorObj.message || 'An error occurred updating plan');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeletePackage = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the investment package "${name}"? Existing user subscriptions referencing this package ID will remain, but users will no longer be able to select it.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/admin/packages?id=${id}`, {
-        method: 'DELETE',
-      });
-
-      const resData = await response.json();
-      if (!response.ok) {
-        throw new Error(resData.error || 'Failed to delete package');
-      }
-
-      router.refresh();
-    } catch (err: unknown) {
-      const errorObj = err as Error;
-      alert(errorObj.message || 'An error occurred deleting package');
-    }
-  };
-
   return (
     <div className="space-y-6">
+      
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Investment Packages</h1>
-          <p className="text-xs text-muted mt-1">Configure and release investment packages for normal users to subscribe to.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Unified Investment Plan</h1>
+          <p className="text-xs text-muted mt-1">Configure plan parameters for the customizable Azead Wealth Plan.</p>
         </div>
+      </div>
 
-        <button 
-          onClick={() => setIsCreateOpen(true)}
-          className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-500/10"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create New Package</span>
-        </button>
+      {/* Info notice about unified custom plans */}
+      <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start space-x-3 text-xs text-foreground">
+        <AlertCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+        <div className="space-y-1">
+          <p className="font-bold">Unified Customizable Plan Active</p>
+          <p className="text-muted leading-relaxed font-sans">
+            The platform is running on a customizable wealth structure. Users set their own principal amount (minimum ₦1,000,000.00 NGN) and choose lock-in duration in years (1, 2, 3, or 5 years) at the fixed interest rate specified below. Adding new packages or deleting the standard plan is disabled to maintain system integrity.
+          </p>
+        </div>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div className="p-4 rounded-xl bg-card border border-border shadow-md">
-          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Total Packages</span>
-          <div className="text-xl font-bold text-foreground mt-1">{initialPackages.length}</div>
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Plan Mode</span>
+          <div className="text-xl font-bold text-foreground mt-1">Custom Principal</div>
         </div>
         <div className="p-4 rounded-xl bg-card border border-border shadow-md">
-          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Active Offerings</span>
-          <div className="text-xl font-bold text-emerald-400 mt-1">{initialPackages.filter(p => p.is_active).length}</div>
+          <span className="text-[10px] text-muted font-bold uppercase tracking-wider">Interest Rate</span>
+          <div className="text-xl font-bold text-emerald-400 mt-1">25.00% APR</div>
         </div>
       </div>
 
       {/* Package listings */}
       <div className="p-6 rounded-2xl bg-card border border-border shadow-xl overflow-x-auto">
-        {initialPackages.length === 0 ? (
-          <p className="text-xs text-muted text-center py-8">No investment packages configured yet.</p>
-        ) : (
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="text-muted border-b border-border pb-2">
-                <th className="pb-3">Package name</th>
-                <th className="pb-3">Subscription Amount</th>
-                <th className="pb-3">Annual Interest</th>
-                <th className="pb-3">Duration terms</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3 text-right">Actions</th>
+        <table className="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr className="text-muted border-b border-border pb-2">
+              <th className="pb-3">Plan Name</th>
+              <th className="pb-3">Default Minimum Principal</th>
+              <th className="pb-3">Fixed Interest Rate</th>
+              <th className="pb-3">Base Cycle Term</th>
+              <th className="pb-3">Status</th>
+              <th className="pb-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {initialPackages.map((p) => (
+              <tr key={p.id} className="align-middle hover:bg-muted/10 transition-colors">
+                <td className="py-4 font-bold text-foreground flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{p.name}</span>
+                </td>
+                <td className="py-4 font-mono font-semibold text-foreground">
+                  {formatNaira(p.amount)}
+                </td>
+                <td className="py-4 font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
+                  <Percent className="w-3 h-3" /> {p.annual_interest_rate}%
+                </td>
+                <td className="py-4 font-semibold text-muted flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" /> {p.duration_days} Days (Base)
+                </td>
+                <td className="py-4">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase flex items-center gap-1 w-fit ${
+                    p.is_active 
+                      ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-400' 
+                      : 'bg-input border border-border text-muted'
+                  }`}>
+                    {p.is_active ? (
+                      <>
+                        <CheckCircle className="w-2.5 h-2.5" />
+                        <span>Active</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-2.5 h-2.5" />
+                        <span>Inactive</span>
+                      </>
+                    )}
+                  </span>
+                </td>
+                <td className="py-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedPackage(p);
+                        setEditForm({
+                          name: p.name,
+                          amount: p.amount.toString(),
+                          annual_interest_rate: p.annual_interest_rate.toString(),
+                          duration_days: p.duration_days.toString(),
+                          is_active: p.is_active
+                        });
+                        setIsEditOpen(true);
+                      }}
+                      title="Edit Plan Parameters"
+                      className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-all flex items-center gap-1 px-3"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                      <span>Edit Parameters</span>
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {initialPackages.map((p) => (
-                <tr key={p.id} className="align-middle hover:bg-muted/10 transition-colors">
-                  <td className="py-4 font-bold text-foreground flex items-center gap-2">
-                    <Tag className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{p.name}</span>
-                  </td>
-                  <td className="py-4 font-mono font-semibold text-foreground">
-                    {formatNaira(p.amount)}
-                  </td>
-                  <td className="py-4 font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
-                    <Percent className="w-3 h-3" /> {p.annual_interest_rate}%
-                  </td>
-                  <td className="py-4 font-semibold text-muted flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" /> {p.duration_days} Days
-                  </td>
-                  <td className="py-4">
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase flex items-center gap-1 w-fit ${
-                      p.is_active 
-                        ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-400' 
-                        : 'bg-input border border-border text-muted'
-                    }`}>
-                      {p.is_active ? (
-                        <>
-                          <CheckCircle className="w-2.5 h-2.5" />
-                          <span>Active</span>
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-2.5 h-2.5" />
-                          <span>Inactive</span>
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={() => {
-                          setSelectedPackage(p);
-                          setEditForm({
-                            name: p.name,
-                            amount: p.amount.toString(),
-                            annual_interest_rate: p.annual_interest_rate.toString(),
-                            duration_days: p.duration_days.toString(),
-                            is_active: p.is_active
-                          });
-                          setIsEditOpen(true);
-                        }}
-                        title="Edit Package"
-                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-all"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeletePackage(p.id, p.name)}
-                        title="Delete Package"
-                        className="p-1.5 rounded-lg bg-input border border-border text-muted hover:text-destructive hover:border-destructive/30 transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      {/* Modal: Create Package */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
-            <button 
-              onClick={() => setIsCreateOpen(false)}
-              title="Close modal"
-              className="absolute top-4 right-4 p-1 rounded-lg bg-input border border-border text-muted hover:text-foreground transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div>
-              <h3 className="text-lg font-bold text-foreground font-heading">Create Package Offer</h3>
-              <p className="text-xs text-muted mt-1">Configure subscription cost, return rate, and maturation cycles.</p>
-            </div>
-
-            <form onSubmit={handleCreatePackage} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Package Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={createForm.name}
-                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  title="Package Name"
-                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
-                  placeholder="e.g. VIP Plus"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
-                <input 
-                  type="number" 
-                  required
-                  min={1}
-                  value={createForm.amount}
-                  onChange={(e) => setCreateForm({ ...createForm, amount: e.target.value })}
-                  title="Subscription Price"
-                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
-                  placeholder="250000"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Annual Interest (%)</label>
-                  <input 
-                    type="number" 
-                    required
-                    step="0.01"
-                    min="0"
-                    value={createForm.annual_interest_rate}
-                    onChange={(e) => setCreateForm({ ...createForm, annual_interest_rate: e.target.value })}
-                    title="Annual Interest Percentage"
-                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
-                    placeholder="25.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Duration (Days)</label>
-                  <input 
-                    type="number" 
-                    required
-                    min={1}
-                    value={createForm.duration_days}
-                    onChange={(e) => setCreateForm({ ...createForm, duration_days: e.target.value })}
-                    title="Duration in Days"
-                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
-                    placeholder="365"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 p-3 bg-input border border-border rounded-xl">
-                <input 
-                  type="checkbox" 
-                  id="create-active"
-                  checked={createForm.is_active}
-                  onChange={(e) => setCreateForm({ ...createForm, is_active: e.target.checked })}
-                  className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
-                />
-                <label htmlFor="create-active" className="text-xs text-foreground font-semibold select-none cursor-pointer">
-                  Activate Package (Visible to users)
-                </label>
-              </div>
-
-              <button 
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
-              >
-                {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Create Package</span>
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Modal: Edit Package */}
       {isEditOpen && selectedPackage && (
@@ -387,33 +215,33 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
             </button>
 
             <div>
-              <h3 className="text-lg font-bold text-foreground font-heading">Edit Package Details</h3>
-              <p className="text-xs text-muted mt-1">Modify configuration parameters for `{selectedPackage.name}`.</p>
+              <h3 className="text-lg font-bold text-foreground font-heading">Edit Plan Parameters</h3>
+              <p className="text-xs text-muted mt-1 font-sans">Modify parameters for the customizable `{selectedPackage.name}`.</p>
             </div>
 
             <form onSubmit={handleEditPackage} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Package Name</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Plan Name</label>
                 <input 
                   type="text" 
                   required
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  title="Package Name"
-                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
+                  title="Plan Name"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Subscription Price (NGN)</label>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Default Minimum Principal (NGN)</label>
                 <input 
                   type="number" 
                   required
-                  min={1}
+                  min={1000000}
                   value={editForm.amount}
                   onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                  title="Subscription Price"
-                  className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
+                  title="Default Minimum Principal"
+                  className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -428,19 +256,19 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                     value={editForm.annual_interest_rate}
                     onChange={(e) => setEditForm({ ...editForm, annual_interest_rate: e.target.value })}
                     title="Annual Interest Percentage"
-                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Duration (Days)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Base Cycle (Days)</label>
                   <input 
                     type="number" 
                     required
                     min={1}
                     value={editForm.duration_days}
                     onChange={(e) => setEditForm({ ...editForm, duration_days: e.target.value })}
-                    title="Duration in Days"
-                    className="w-full bg-input border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
+                    title="Base Cycle in Days"
+                    className="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -454,7 +282,7 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                   className="rounded border-border text-emerald-500 focus:ring-emerald-500 bg-card w-4 h-4"
                 />
                 <label htmlFor="edit-active" className="text-xs text-foreground font-semibold select-none cursor-pointer">
-                  Activate Package (Visible to users)
+                  Activate Plan (Visible to users)
                 </label>
               </div>
 
@@ -464,7 +292,7 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                 className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
               >
                 {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Save Changes</span>
+                <span>Save Plan Parameters</span>
               </button>
             </form>
           </div>

@@ -8,7 +8,9 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Loader2, 
-  X
+  X,
+  Coins,
+  TrendingUp
 } from 'lucide-react';
 
 interface Package {
@@ -46,8 +48,16 @@ export default function InvestmentsClient({
 }: InvestmentsClientProps) {
   const router = useRouter();
 
-  // Selected package for purchase modal
-  const [selectedPkg, setSelectedPkg] = useState<Package | null>(null);
+  // The single customizable package template
+  const wealthPlanPkg = packages.find(p => p.id === 'cb92d8bc-c10b-4611-8583-bdd5a1cd0d68') || packages[0];
+
+  // Calculator states
+  const [amountInput, setAmountInput] = useState<number>(1000000);
+  const [durationYears, setDurationYears] = useState<number>(1);
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  // Subscription modal states
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [autoReinvestOpt, setAutoReinvestOpt] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
@@ -70,8 +80,17 @@ export default function InvestmentsClient({
     }).format(val);
   };
 
+  const handleOpenConfirm = () => {
+    if (amountInput < 1000000) {
+      setInputError('Minimum investment amount is ₦1,000,000');
+      return;
+    }
+    setInputError(null);
+    setIsConfirmOpen(true);
+  };
+
   const handlePurchase = async () => {
-    if (!selectedPkg) return;
+    if (!wealthPlanPkg) return;
     setPurchaseLoading(true);
     setPurchaseError(null);
     setPurchaseSuccess(false);
@@ -81,7 +100,9 @@ export default function InvestmentsClient({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          packageId: selectedPkg.id,
+          packageId: wealthPlanPkg.id,
+          amount: amountInput,
+          durationYears: durationYears,
           autoReinvest: autoReinvestOpt,
         }),
       });
@@ -93,12 +114,12 @@ export default function InvestmentsClient({
 
       setPurchaseSuccess(true);
       setTimeout(() => {
-        setSelectedPkg(null);
+        setIsConfirmOpen(false);
         setPurchaseSuccess(false);
         router.refresh();
       }, 2000);
     } catch (err: unknown) {
-    const errorObj = err as Error;
+      const errorObj = err as Error;
       setPurchaseError(errorObj.message || 'An unexpected error occurred.');
     } finally {
       setPurchaseLoading(false);
@@ -155,25 +176,17 @@ export default function InvestmentsClient({
         router.refresh();
       }, 2000);
     } catch (err: unknown) {
-    const errorObj = err as Error;
+      const errorObj = err as Error;
       setTerminationError(errorObj.message || 'An unexpected error occurred.');
     } finally {
       setTerminationLoading(false);
     }
   };
 
-  // Helper package class sorting
-  const getPackageGradient = (pkgName: string) => {
-    switch (pkgName.toLowerCase()) {
-      case 'basic': return 'from-slate-700 to-slate-900 border-slate-800';
-      case 'standard': return 'from-emerald-800 to-emerald-950 border-emerald-700/50';
-      case 'silver': return 'from-blue-900 to-slate-950 border-blue-800/30';
-      case 'gold': return 'from-amber-600/30 to-amber-950/70 border-amber-500/50';
-      case 'diamond': return 'from-purple-900 to-slate-950 border-purple-800/40';
-      case 'vip': return 'from-yellow-600/20 to-stone-900 border-yellow-500/40';
-      default: return 'from-slate-800 to-slate-950 border-slate-900';
-    }
-  };
+  // Calculator outputs
+  const annualInterestRate = 25.00;
+  const estimatedInterest = amountInput * (annualInterestRate / 100) * durationYears;
+  const totalPayout = amountInput + estimatedInterest;
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
@@ -181,57 +194,124 @@ export default function InvestmentsClient({
       {/* Overview page titles */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Structured Investments</h1>
-        <p className="text-xs text-muted mt-1">Select a high-yield locked level or configure active holdings.</p>
+        <p className="text-xs text-muted mt-1 font-sans">Secure your future with the customized Azead Wealth Plan locked at 25.00% APR.</p>
       </div>
 
-      {/* Available packages */}
-      <div className="space-y-6">
-        <h2 className="text-lg font-bold text-foreground font-heading px-1">Subscription Capital Packages (25.00% APR)</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => {
-            return (
-              <div 
-                key={pkg.id} 
-                className={`p-6 rounded-2xl bg-gradient-to-b ${getPackageGradient(pkg.name)} border shadow-xl flex flex-col justify-between h-64 group relative`}
-              >
-                <div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs text-slate-300 font-bold uppercase tracking-wide">{pkg.name} Level</span>
-                    <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold font-mono">25% APR</span>
-                  </div>
-                  <div className="mt-4 text-2xl font-extrabold text-white font-mono">
-                    {formatNaira(pkg.amount).replace('.00', '')}
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Fixed principal allocation requirement</p>
-                  
-                  <div className="mt-4 space-y-2 text-xs text-slate-300">
-                    <div className="flex justify-between">
-                      <span>Term Lock-In:</span>
-                      <span className="font-semibold text-white">1 Year ({pkg.duration_days} days)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Guaranteed Interest:</span>
-                      <span className="font-semibold text-emerald-400">{formatNaira(pkg.amount * 0.25)}</span>
-                    </div>
-                  </div>
-                </div>
+      {/* Customizable Investment Calculator */}
+      <div className="grid md:grid-cols-5 gap-8 items-start">
+        
+        {/* Form panel */}
+        <div className="md:col-span-3 p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-xl space-y-6">
+          <div className="flex items-center space-x-3 pb-2 border-b border-border">
+            <Coins className="w-5 h-5 text-emerald-500" />
+            <h2 className="text-lg font-bold text-foreground font-heading">Azead Wealth Plan</h2>
+          </div>
 
-                <div className="pt-4">
-                  <button
-                    onClick={() => {
-                      setSelectedPkg(pkg);
-                      setAutoReinvestOpt(false);
-                      setPurchaseError(null);
-                    }}
-                    className="w-full py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-white dark:border-slate-800 text-xs font-bold transition-all"
-                  >
-                    Subscribe Level
-                  </button>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="amount-input" className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                Principal Investment Amount (NGN)
+              </label>
+              <div className="relative mt-1 rounded-xl shadow-sm">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <span className="text-foreground/70 font-bold font-mono">₦</span>
                 </div>
+                <input
+                  id="amount-input"
+                  type="number"
+                  name="amount"
+                  min="1000000"
+                  step="100000"
+                  value={amountInput}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setAmountInput(val);
+                    if (val < 1000000) {
+                      setInputError('Minimum investment amount is ₦1,000,000');
+                    } else {
+                      setInputError(null);
+                    }
+                  }}
+                  className="block w-full rounded-xl border-border bg-secondary/30 py-3.5 pl-9 pr-4 text-foreground font-mono text-sm focus:border-emerald-500 focus:ring-emerald-500 placeholder-muted/50 transition-all border"
+                  placeholder="1,000,000"
+                />
               </div>
-            );
-          })}
+              {inputError ? (
+                <p className="text-xs text-red-500 mt-1.5 flex items-center space-x-1">
+                  <span>⚠</span> <span>{inputError}</span>
+                </p>
+              ) : (
+                <p className="text-[10px] text-muted mt-1.5 font-sans">Enter an amount of ₦1,000,000 or more.</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="duration-select" className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                Lock-in Term (Duration)
+              </label>
+              <select
+                id="duration-select"
+                value={durationYears}
+                onChange={(e) => setDurationYears(Number(e.target.value))}
+                className="block w-full rounded-xl border-border bg-secondary/30 py-3.5 px-4 text-foreground text-sm focus:border-emerald-500 focus:ring-emerald-500 transition-all border"
+              >
+                <option value={1}>1 Year (365 Days)</option>
+                <option value={2}>2 Years (730 Days)</option>
+                <option value={3}>3 Years (1095 Days)</option>
+                <option value={5}>5 Years (1825 Days)</option>
+              </select>
+              <p className="text-[10px] text-muted mt-1.5 font-sans">Annual yield rate is fixed at 25.00% APR.</p>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={handleOpenConfirm}
+              className="w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-[0.99] flex items-center justify-center space-x-2"
+            >
+              <span>Subscribe to Plan</span>
+            </button>
+          </div>
         </div>
+
+        {/* Calculation summary panel */}
+        <div className="md:col-span-2 p-6 sm:p-8 rounded-2xl bg-gradient-to-b from-emerald-950/20 to-slate-950/40 border border-emerald-500/20 shadow-xl space-y-6">
+          <div className="flex items-center space-x-3 pb-2 border-b border-emerald-500/20">
+            <TrendingUp className="w-5 h-5 text-emerald-400 animate-pulse" />
+            <h2 className="text-lg font-bold text-foreground font-heading">Expected Returns</h2>
+          </div>
+
+          <div className="space-y-4 font-sans">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-muted">Interest Rate (Fixed)</span>
+              <span className="font-bold text-emerald-400 font-mono">25.00% / Year</span>
+            </div>
+
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-muted">Lock-in Duration</span>
+              <span className="font-bold text-white">{durationYears} {durationYears === 1 ? 'Year' : 'Years'}</span>
+            </div>
+
+            <div className="border-t border-border/30 pt-4 flex justify-between items-center">
+              <span className="text-xs text-muted">Principal Capital</span>
+              <span className="text-sm font-bold text-foreground font-mono">{formatNaira(amountInput).replace('.00', '')}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted">Accrued Profit</span>
+              <span className="text-sm font-bold text-emerald-400 font-mono">+{formatNaira(estimatedInterest).replace('.00', '')}</span>
+            </div>
+
+            <div className="border-t border-emerald-500/20 pt-4 space-y-1 bg-emerald-500/5 p-4 rounded-xl border">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Total Payout at Maturity</span>
+              <div className="text-xl sm:text-2xl font-extrabold text-white font-mono leading-none pt-1">
+                {formatNaira(totalPayout)}
+              </div>
+              <p className="text-[9px] text-muted pt-1">Includes both principal and guaranteed interest.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Active & Historical Investments */}
@@ -240,18 +320,22 @@ export default function InvestmentsClient({
         
         {investments.length === 0 ? (
           <div className="p-8 rounded-2xl bg-card/30 border border-border text-center text-muted text-sm">
-            You do not currently hold any investment positions. Use the packages above to subscribe.
+            You do not currently hold any active investment positions. Use the calculator above to subscribe.
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {investments.map((inv) => {
-              const pkgName = inv.package_name || inv.investment_packages?.name || 'Structured';
+              const pkgName = inv.package_name || inv.investment_packages?.name || 'Azead Wealth Plan';
               const isPendingTermination = inv.status === 'early_termination_pending';
               const isCompleted = inv.status === 'completed';
               const isActive = inv.status === 'active';
               
               const start = new Date(inv.start_date);
               const end = new Date(inv.maturity_date);
+
+              // Calculate actual lock-in years of this record
+              const durationDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+              const years = Math.max(1, Math.round(durationDays / 365));
               
               return (
                 <div key={inv.id} className="p-6 rounded-2xl bg-card border border-border shadow-xl flex flex-col justify-between space-y-6">
@@ -259,9 +343,9 @@ export default function InvestmentsClient({
                   {/* Row Header */}
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="text-sm font-bold text-foreground font-heading uppercase">{pkgName} Allocation</h4>
+                      <h4 className="text-sm font-bold text-foreground font-heading uppercase">{pkgName}</h4>
                       <div className="text-[10px] text-muted mt-1 font-mono">
-                        Reference: {inv.id.substring(0, 8).toUpperCase()}
+                        Reference: {inv.id.substring(0, 8).toUpperCase()} | Term: {years} {years === 1 ? 'Year' : 'Years'}
                       </div>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wide ${
@@ -278,11 +362,11 @@ export default function InvestmentsClient({
                   <div className="grid grid-cols-2 gap-4 text-xs font-mono text-muted border-t border-b border-border py-4">
                     <div>
                       <span className="text-[10px] text-muted">Principal Capital</span>
-                      <div className="text-sm font-bold text-foreground mt-0.5">{formatNaira(inv.amount)}</div>
+                      <div className="text-sm font-bold text-foreground mt-0.5 font-mono">{formatNaira(inv.amount)}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted">Yield APR</span>
-                      <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{inv.interest_rate}% APR</div>
+                      <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">{inv.interest_rate}% APR</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted">Start Date</span>
@@ -303,7 +387,7 @@ export default function InvestmentsClient({
                         <div className="relative">
                           <input 
                             type="checkbox"
-                             className="sr-only"
+                            className="sr-only"
                             checked={inv.auto_reinvest}
                             disabled={toggleLoadingId === inv.id}
                             onChange={() => handleToggleAutoReinvest(inv.id, inv.auto_reinvest)}
@@ -347,13 +431,13 @@ export default function InvestmentsClient({
       </div>
 
       {/* MODAL 1: Purchase Confirmation */}
-      {selectedPkg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6 animate-in fade-in zoom-in-95 duration-200">
+      {isConfirmOpen && wealthPlanPkg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative space-y-6 animate-in zoom-in-95 duration-200">
             <button 
               title="Close Modal"
               aria-label="Close Modal"
-              onClick={() => setSelectedPkg(null)}
+              onClick={() => setIsConfirmOpen(false)}
               className="absolute top-4 right-4 p-1 text-muted hover:text-foreground rounded-lg"
             >
               <X className="w-5 h-5" />
@@ -364,7 +448,7 @@ export default function InvestmentsClient({
                 <Award className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-foreground font-heading">Confirm Investment</h3>
-              <p className="text-xs text-muted mt-1">Subscribe to the premium wealth class</p>
+              <p className="text-xs text-muted mt-1 font-sans">Subscribe to the premium wealth class</p>
             </div>
 
             {purchaseError && (
@@ -383,12 +467,16 @@ export default function InvestmentsClient({
 
             <div className="p-4 rounded-xl bg-muted/10 border border-border font-mono text-xs space-y-2.5 text-muted">
               <div className="flex justify-between">
-                <span>Selected Package:</span>
-                <span className="text-foreground font-bold uppercase">{selectedPkg.name} Level</span>
+                <span>Selected Plan:</span>
+                <span className="text-foreground font-bold uppercase">{wealthPlanPkg.name}</span>
               </div>
               <div className="flex justify-between">
                 <span>Capital Required:</span>
-                <span className="text-foreground font-bold">{formatNaira(selectedPkg.amount)}</span>
+                <span className="text-foreground font-bold">{formatNaira(amountInput)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Lock-in Duration:</span>
+                <span className="text-foreground font-bold">{durationYears} {durationYears === 1 ? 'Year' : 'Years'} ({durationYears * 365} Days)</span>
               </div>
               <div className="flex justify-between">
                 <span>Guaranteed Yield Rate:</span>
@@ -396,13 +484,13 @@ export default function InvestmentsClient({
               </div>
               <div className="flex justify-between border-t border-border pt-2 text-muted">
                 <span>My Wallet Balance:</span>
-                <span className={walletBalance >= selectedPkg.amount ? 'text-foreground' : 'text-red-500'}>
+                <span className={walletBalance >= amountInput ? 'text-foreground' : 'text-red-500'}>
                   {formatNaira(walletBalance)}
                 </span>
               </div>
             </div>
 
-            {walletBalance >= selectedPkg.amount ? (
+            {walletBalance >= amountInput ? (
               <div className="space-y-4">
                 <label className="flex items-center space-x-3 cursor-pointer p-3 bg-secondary/20 border border-border rounded-xl">
                   <input 

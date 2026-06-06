@@ -55,7 +55,23 @@ export default function ReferralsClient({
       {/* Overview Titles */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">Referral System</h1>
-        <p className="text-xs text-muted mt-1">Earn 2.5% commission on your referee&apos;s first package purchase.</p>
+        <p className="text-xs text-muted mt-1 font-sans">Earn 2.5% commission on your referee&apos;s first purchase.</p>
+      </div>
+
+      {/* Promotional Banner */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent border border-amber-500/30 shadow-lg relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-[10px] font-bold text-amber-500 uppercase tracking-wider font-mono">
+            🔥 Hot Promotion
+          </div>
+          <h2 className="text-base font-bold text-foreground font-heading mt-1">₦1,000,000 Extra Referral Bonus!</h2>
+          <p className="text-xs text-muted leading-relaxed max-w-2xl font-sans">
+            Bring in at least <strong className="text-foreground">2 people</strong> who each invest <strong className="text-foreground">₦20,000,000 or more</strong>, and receive a one-time extra promotional bonus of <strong className="text-emerald-500">₦1,000,000</strong> paid directly to your wallet!
+          </p>
+        </div>
+        <div className="flex-shrink-0 font-mono text-xl sm:text-2xl font-extrabold text-amber-500">
+          +₦1,000,000
+        </div>
       </div>
 
       {/* Main Referral Info Grid */}
