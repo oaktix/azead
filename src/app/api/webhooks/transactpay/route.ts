@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TransactpayService } from '@/lib/transactpay';
+import { sendUserDepositConfirmed, sendAdminNewDeposit } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -202,6 +203,36 @@ export async function POST(request: Request) {
     }
 
     console.log(`Deposit ${reference} processed successfully for user ${resolvedUserId}. Amount: ${creditAmount}`);
+
+    // Send email notifications (fire-and-forget)
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', resolvedUserId)
+        .maybeSingle();
+
+      const { data: authUser } = await supabase.auth.admin.getUserById(resolvedUserId);
+      const userEmail = authUser?.user?.email || '';
+      const firstName = profile?.first_name || 'Investor';
+      const lastName = profile?.last_name || '';
+
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', resolvedUserId)
+        .maybeSingle();
+
+      const newBalance = Number(wallet?.balance || 0);
+
+      await Promise.all([
+        sendUserDepositConfirmed(userEmail, firstName, creditAmount, reference, newBalance),
+        sendAdminNewDeposit(userEmail, `${firstName} ${lastName}`.trim(), creditAmount, reference, resolvedUserId),
+      ]);
+    } catch (emailErr) {
+      console.error('[webhook/transactpay] Email error:', emailErr);
+    }
+
     return NextResponse.json({ success: true, processed: creditSuccess });
 
   } catch (error: unknown) {

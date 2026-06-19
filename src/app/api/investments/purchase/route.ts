@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserInvestmentPurchased, sendAdminNewInvestment } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +39,32 @@ export async function POST(request: Request) {
 
     if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 400 });
+    }
+
+    // Send email notifications (fire-and-forget)
+    try {
+      const adminClient = createAdminClient();
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const { data: authUser } = await adminClient.auth.admin.getUserById(user.id);
+      const userEmail = authUser?.user?.email || user.email || '';
+      const firstName = profile?.first_name || 'Investor';
+      const lastName = profile?.last_name || '';
+
+      const maturityDate = new Date();
+      maturityDate.setFullYear(maturityDate.getFullYear() + parsedDuration);
+      const expectedPayout = parsedAmount + (parsedAmount * 0.25 * parsedDuration);
+
+      await Promise.all([
+        sendUserInvestmentPurchased(userEmail, firstName, parsedAmount, parsedDuration, maturityDate, expectedPayout),
+        sendAdminNewInvestment(userEmail, `${firstName} ${lastName}`.trim(), parsedAmount, parsedDuration, String(investmentId)),
+      ]);
+    } catch (emailErr) {
+      console.error('[investments/purchase] Email error:', emailErr);
     }
 
     return NextResponse.json({ success: true, investmentId });

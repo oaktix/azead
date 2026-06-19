@@ -27,9 +27,12 @@ function SignUpForm() {
     setLoading(true);
     setError(null);
 
-    const redirectTo = typeof window !== 'undefined'
-      ? `${window.location.origin}/auth/callback`
-      : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`;
+    // Use NEXT_PUBLIC_APP_URL explicitly so the Supabase confirmation email
+    // always links to the production URL, not localhost.
+    // Set NEXT_PUBLIC_APP_URL=https://yourdomain.com in your environment variables.
+    const appBase = process.env.NEXT_PUBLIC_APP_URL
+      || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+    const redirectTo = `${appBase}/auth/callback`;
 
     // Call Supabase signup and pass custom metadata
     const { error: signUpError } = await supabase.auth.signUp({

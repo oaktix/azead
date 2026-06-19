@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserDepositConfirmed, sendAdminNewDeposit } from '@/lib/email';
 
 /**
  * POST /api/deposits/verify
@@ -112,6 +113,37 @@ export async function POST(request: Request) {
     }
 
     console.log(`✅ Deposit ${reference} credited ₦${deposit.amount} to user ${deposit.user_id}`);
+
+    // Send email notifications (fire-and-forget)
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', deposit.user_id)
+        .maybeSingle();
+
+      const { data: authUser } = await supabase.auth.admin.getUserById(deposit.user_id);
+      const userEmail = authUser?.user?.email || '';
+      const firstName = profile?.first_name || 'Investor';
+      const lastName = profile?.last_name || '';
+
+      // Fetch updated wallet balance
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', deposit.user_id)
+        .maybeSingle();
+
+      const newBalance = Number(wallet?.balance || 0);
+
+      await Promise.all([
+        sendUserDepositConfirmed(userEmail, firstName, Number(deposit.amount), reference, newBalance),
+        sendAdminNewDeposit(userEmail, `${firstName} ${lastName}`.trim(), Number(deposit.amount), reference, deposit.user_id),
+      ]);
+    } catch (emailErr) {
+      console.error('[deposits/verify] Email error:', emailErr);
+    }
+
     return NextResponse.json({ success: true, credited, amount: deposit.amount });
 
   } catch (error: unknown) {

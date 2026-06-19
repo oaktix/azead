@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserKYCApproved, sendUserKYCRejected, sendAdminKYCSubmission } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -56,6 +57,21 @@ export async function POST(request: Request) {
         title: 'KYC Verification Approved!',
         message: 'Your account identity verification has been successfully verified.'
       });
+
+      // Send approval email (fire-and-forget)
+      try {
+        const { data: profile } = await adminClient
+          .from('profiles')
+          .select('first_name')
+          .eq('id', userId)
+          .maybeSingle();
+        const { data: authUser } = await adminClient.auth.admin.getUserById(userId);
+        const userEmail = authUser?.user?.email || '';
+        const firstName = profile?.first_name || 'Investor';
+        await sendUserKYCApproved(userEmail, firstName);
+      } catch (emailErr) {
+        console.error('[admin/kyc] KYC approval email error:', emailErr);
+      }
     } else {
       // Update kyc document status to rejected
       await adminClient
@@ -82,6 +98,21 @@ export async function POST(request: Request) {
         title: 'KYC Verification Rejected',
         message: `Your identity verification was rejected. Reason: ${reason || 'None provided'}`
       });
+
+      // Send rejection email (fire-and-forget)
+      try {
+        const { data: profile } = await adminClient
+          .from('profiles')
+          .select('first_name')
+          .eq('id', userId)
+          .maybeSingle();
+        const { data: authUser } = await adminClient.auth.admin.getUserById(userId);
+        const userEmail = authUser?.user?.email || '';
+        const firstName = profile?.first_name || 'Investor';
+        await sendUserKYCRejected(userEmail, firstName, reason || 'Invalid or unclear documents');
+      } catch (emailErr) {
+        console.error('[admin/kyc] KYC rejection email error:', emailErr);
+      }
     }
 
     return NextResponse.json({ success: true });

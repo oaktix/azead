@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendAdminKYCSubmission } from '@/lib/email';
 import path from 'path';
 
 export async function POST(request: Request) {
@@ -74,6 +75,24 @@ export async function POST(request: Request) {
 
     if (profileError) {
       throw profileError;
+    }
+
+    // Notify admin of new KYC submission (fire-and-forget)
+    try {
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const { data: authUser } = await adminClient.auth.admin.getUserById(user.id);
+      const userEmail = authUser?.user?.email || user.email || '';
+      const firstName = profile?.first_name || 'Investor';
+      const lastName = profile?.last_name || '';
+
+      await sendAdminKYCSubmission(userEmail, `${firstName} ${lastName}`.trim(), user.id);
+    } catch (emailErr) {
+      console.error('[kyc/submit] Admin email error:', emailErr);
     }
 
     return NextResponse.json({ success: true, url: idDocumentUrl });

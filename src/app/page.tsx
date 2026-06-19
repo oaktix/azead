@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  Shield, 
-  Calculator, 
-  Lock, 
+import {
+  TrendingUp,
+  Shield,
+  Calculator,
+  Lock,
   ArrowRight,
   Menu,
   X,
@@ -14,7 +14,9 @@ import {
   MapPin,
   CheckCircle2,
   Clock,
-  AlertOctagon
+  AlertOctagon,
+  Landmark,
+  Building2
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -71,6 +73,7 @@ export default function LandingPage() {
             
             <nav className="hidden md:flex space-x-8 text-sm font-medium text-muted">
               <a href="#packages" className="hover:text-foreground transition-colors">Wealth Plan</a>
+              <a href="#deployment" className="hover:text-foreground transition-colors">Our Sectors</a>
               <a href="#calculator" className="hover:text-foreground transition-colors">Calculator</a>
               <a href="#stats" className="hover:text-foreground transition-colors">Transparency</a>
               <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
@@ -96,6 +99,7 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-border bg-background/95 backdrop-blur-lg px-4 pt-2 pb-6 space-y-3">
             <a href="#packages" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Wealth Plan</a>
+            <a href="#deployment" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Our Sectors</a>
             <a href="#calculator" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Calculator</a>
             <a href="#stats" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">Transparency</a>
             <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-muted hover:text-foreground">FAQ</a>
@@ -208,6 +212,116 @@ export default function LandingPage() {
               <p className="text-sm text-muted leading-relaxed font-sans">
                 Structured portfolios operate on customized lock-in years with clear rules. Early termination is protected via standard processing models.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What We Use The Money For */}
+      <section id="deployment" className="py-24 border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Capital Deployment Strategy</span>
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading">
+              What We Use The Money For
+            </h2>
+            <p className="mt-4 text-muted max-w-2xl mx-auto text-sm leading-relaxed">
+              Every naira invested on AZEAD is deployed into high-yield, real-economy sectors that generate the returns we pass directly to our investors. Here is exactly how your capital is put to work.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+
+            {/* Microfinance Lending */}
+            <div className="relative rounded-2xl bg-card border border-emerald-500/15 p-8 overflow-hidden group hover:border-emerald-500/30 transition-all">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-6 group-hover:scale-105 transition-transform">
+                <Landmark className="w-7 h-7" />
+              </div>
+              <div className="flex items-center space-x-3 mb-3">
+                <h3 className="text-xl font-bold text-foreground font-heading">Microfinance Lending</h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 font-mono">SECTOR 01</span>
+              </div>
+              <p className="text-sm text-muted leading-relaxed mb-6">
+                We extend structured short-term credit facilities to small-scale traders and micro-enterprises across Nigeria. These businesses — market traders, artisans, retailers, and service providers — operate with high cash velocity and strong repayment capacity, generating consistent, predictable returns.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Short-cycle lending with daily/weekly repayment structures</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Collateral-backed and guarantor-secured loan portfolios</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Credit risk is mitigated through diversified borrower pools</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Directly empowers grassroots economic growth in local communities</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Real Estate Development Financing */}
+            <div className="relative rounded-2xl bg-card border border-teal-500/15 p-8 overflow-hidden group hover:border-teal-500/30 transition-all">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
+              <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6 group-hover:scale-105 transition-transform">
+                <Building2 className="w-7 h-7" />
+              </div>
+              <div className="flex items-center space-x-3 mb-3">
+                <h3 className="text-xl font-bold text-foreground font-heading">Real Estate Development</h3>
+                <span className="px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-400 font-mono">SECTOR 02</span>
+              </div>
+              <p className="text-sm text-muted leading-relaxed mb-6">
+                We finance strategic real estate development projects, providing bridge loans and construction financing to vetted developers across key Nigerian markets. Nigeria&apos;s chronic housing deficit and rapid urbanisation create sustained demand, allowing us to deploy capital at above-market rates with defined exit timelines.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Bridge and construction finance on residential and mixed-use projects</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Land-backed security on all development financing facilities</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Staged drawdown structure aligned with construction milestones</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted">Focus on high-growth corridors in Lagos, Abuja, and Port Harcourt</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Capital allocation visual bar */}
+          <div className="mt-12 p-8 rounded-2xl bg-card border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold text-foreground font-heading">Capital Deployment Allocation</span>
+              <span className="text-xs text-muted font-mono">Total Active Portfolio</span>
+            </div>
+            <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400" style={{ width: '55%' }} />
+              <div className="h-full bg-gradient-to-r from-teal-500 to-teal-400" style={{ width: '45%' }} />
+            </div>
+            <div className="flex justify-between mt-3">
+              <div className="flex items-center space-x-2">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+                <span className="text-xs text-muted">Microfinance Lending — 55%</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-3 h-3 rounded-full bg-teal-500 inline-block" />
+                <span className="text-xs text-muted">Real Estate Finance — 45%</span>
+              </div>
             </div>
           </div>
         </div>

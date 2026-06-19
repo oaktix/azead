@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserEarlyWithdrawalInitiated, sendAdminEarlyWithdrawalRequest } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +26,39 @@ export async function POST(request: Request) {
 
     if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 400 });
+    }
+
+    // Send email notifications (fire-and-forget)
+    try {
+      const adminClient = createAdminClient();
+
+      // Fetch investment details for the email
+      const { data: investment } = await adminClient
+        .from('investments')
+        .select('amount')
+        .eq('id', investmentId)
+        .maybeSingle();
+
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const { data: authUser } = await adminClient.auth.admin.getUserById(user.id);
+      const userEmail = authUser?.user?.email || user.email || '';
+      const firstName = profile?.first_name || 'Investor';
+      const lastName = profile?.last_name || '';
+      const principalAmount = Number(investment?.amount || 0);
+      const penaltyAmount = Math.round(principalAmount * 0.10 * 100) / 100;
+      const netPayout = principalAmount - penaltyAmount;
+
+      await Promise.all([
+        sendUserEarlyWithdrawalInitiated(userEmail, firstName, principalAmount, penaltyAmount, netPayout),
+        sendAdminEarlyWithdrawalRequest(userEmail, `${firstName} ${lastName}`.trim(), principalAmount, penaltyAmount, investmentId),
+      ]);
+    } catch (emailErr) {
+      console.error('[investments/early-terminate] Email error:', emailErr);
     }
 
     return NextResponse.json({ success });

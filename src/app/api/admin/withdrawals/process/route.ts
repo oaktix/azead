@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserWithdrawalApproved, sendUserWithdrawalRejected } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -30,6 +31,13 @@ export async function POST(request: Request) {
 
     const adminClient = createAdminClient();
 
+    // Fetch withdrawal details for email
+    const { data: withdrawal } = await adminClient
+      .from('withdrawals')
+      .select('user_id, amount, payout_amount, bank_name, rejection_reason')
+      .eq('id', withdrawalId)
+      .maybeSingle();
+
     if (action === 'approve') {
       // Execute database function to approve withdrawal
       const { data: success, error: rpcError } = await adminClient.rpc('approve_withdrawal', {
@@ -41,17 +49,66 @@ export async function POST(request: Request) {
         throw rpcError;
       }
 
+      // Send approval email (fire-and-forget)
+      if (withdrawal) {
+        try {
+          const { data: profile } = await adminClient
+            .from('profiles')
+            .select('first_name')
+            .eq('id', withdrawal.user_id)
+            .maybeSingle();
+
+          const { data: authUser } = await adminClient.auth.admin.getUserById(withdrawal.user_id);
+          const userEmail = authUser?.user?.email || '';
+          const firstName = profile?.first_name || 'Investor';
+
+          await sendUserWithdrawalApproved(
+            userEmail, firstName,
+            Number(withdrawal.amount),
+            Number(withdrawal.payout_amount),
+            withdrawal.bank_name
+          );
+        } catch (emailErr) {
+          console.error('[admin/withdrawals/process] Approval email error:', emailErr);
+        }
+      }
+
       return NextResponse.json({ success });
     } else {
+      const rejectionReason = reason || 'Audit check failed';
+
       // Execute database function to reject withdrawal and refund wallet
       const { data: success, error: rpcError } = await adminClient.rpc('reject_withdrawal', {
         p_withdrawal_id: withdrawalId,
         p_admin_id: user.id,
-        p_rejection_reason: reason || 'Audit check failed'
+        p_rejection_reason: rejectionReason
       });
 
       if (rpcError) {
         throw rpcError;
+      }
+
+      // Send rejection email (fire-and-forget)
+      if (withdrawal) {
+        try {
+          const { data: profile } = await adminClient
+            .from('profiles')
+            .select('first_name')
+            .eq('id', withdrawal.user_id)
+            .maybeSingle();
+
+          const { data: authUser } = await adminClient.auth.admin.getUserById(withdrawal.user_id);
+          const userEmail = authUser?.user?.email || '';
+          const firstName = profile?.first_name || 'Investor';
+
+          await sendUserWithdrawalRejected(
+            userEmail, firstName,
+            Number(withdrawal.amount),
+            rejectionReason
+          );
+        } catch (emailErr) {
+          console.error('[admin/withdrawals/process] Rejection email error:', emailErr);
+        }
       }
 
       return NextResponse.json({ success });

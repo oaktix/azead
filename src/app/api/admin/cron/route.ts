@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendUserInvestmentMatured } from '@/lib/email';
 
 export async function POST() {
   try {
@@ -38,6 +39,45 @@ export async function POST() {
       action: 'run_cron_maturation',
       details: { processedCount }
     });
+
+    // Send maturity emails to affected users (fire-and-forget)
+    if (processedCount && processedCount > 0) {
+      try {
+        // Query investments that just matured (within the past 10 minutes)
+        const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: maturedInvestments } = await adminClient
+          .from('investments')
+          .select('id, user_id, amount, interest_rate, accrued_interest')
+          .eq('status', 'completed')
+          .gte('maturity_date', cutoff) // safety window: matured recently
+          .lte('maturity_date', new Date().toISOString());
+
+        if (maturedInvestments && maturedInvestments.length > 0) {
+          for (const inv of maturedInvestments) {
+            try {
+              const { data: profile } = await adminClient
+                .from('profiles')
+                .select('first_name')
+                .eq('id', inv.user_id)
+                .maybeSingle();
+
+              const { data: authUser } = await adminClient.auth.admin.getUserById(inv.user_id);
+              const userEmail = authUser?.user?.email || '';
+              const firstName = profile?.first_name || 'Investor';
+              const principal = Number(inv.amount);
+              const interestEarned = Number(inv.accrued_interest || 0);
+              const totalPayout = principal + interestEarned;
+
+              await sendUserInvestmentMatured(userEmail, firstName, principal, interestEarned, totalPayout);
+            } catch (singleEmailErr) {
+              console.error(`[cron] Maturity email error for investment ${inv.id}:`, singleEmailErr);
+            }
+          }
+        }
+      } catch (emailErr) {
+        console.error('[cron] Maturity email batch error:', emailErr);
+      }
+    }
 
     return NextResponse.json({ success: true, processedCount });
   } catch (error: unknown) {
