@@ -14,7 +14,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'AZEAD Invest <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'AZEAD Invest <hello@azeadinvest.com>';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'azeedbestway@gmail.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://azeadinvest.com';
 
