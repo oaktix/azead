@@ -106,7 +106,7 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
         <div className="space-y-1">
           <p className="font-bold">Unified Customizable Plan Active</p>
           <p className="text-muted leading-relaxed font-sans">
-            The platform is running on a customizable wealth structure. Users set their own principal amount (minimum ₦1,000,000.00 NGN) and choose lock-in duration in years (1, 2, 3, or 5 years) at the fixed interest rate specified below. Adding new packages or deleting the standard plan is disabled to maintain system integrity.
+            The platform is running on a customizable wealth structure. Users set their own principal amount (minimum ₦100,000.00 NGN) and choose lock-in duration in years (1, 2, 3, or 5 years) at the fixed interest rate specified below. Adding new packages or deleting the standard plan is disabled to maintain system integrity.
           </p>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                 <input 
                   type="number" 
                   required
-                  min={1000000}
+                  min={100000}
                   value={editForm.amount}
                   onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
                   title="Default Minimum Principal"

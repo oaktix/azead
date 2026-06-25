@@ -23,7 +23,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Calculator State
-  const [calcAmount, setCalcAmount] = useState<number>(1000000);
+  const [calcAmount, setCalcAmount] = useState<number>(100000);
   const [calcDuration, setCalcDuration] = useState<number>(1); // default 1 year
   
   // Progressive simulation ticker
@@ -164,7 +164,7 @@ export default function LandingPage() {
               <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[45%] rounded-full" />
             </div>
             <div className="flex justify-between text-[10px] text-muted font-mono">
-              <span>Principal: ₦1,000,000.00</span>
+              <span>Principal: ₦100,000.00</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">Yield Rate: 25.00% APR</span>
             </div>
           </div>
@@ -350,13 +350,13 @@ export default function LandingPage() {
                 </span>
                 <h3 className="text-2xl font-bold text-foreground font-heading mt-4">Azead Wealth Plan</h3>
                 <p className="text-xs text-muted mt-2">
-                  Customize your principal starting from ₦1,000,000 and select your lock-in period up to 5 years.
+                  Customize your principal starting from ₦100,000 and select your lock-in period up to 5 years.
                 </p>
 
                 <ul className="mt-8 space-y-4 border-t border-border pt-6 text-sm">
                   <li className="flex items-center space-x-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                    <span>Minimum principal: ₦1,000,000 NGN</span>
+                    <span>Minimum principal: ₦100,000 NGN</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
@@ -465,14 +465,14 @@ export default function LandingPage() {
                     value={calcAmount}
                     onChange={(e) => setCalcAmount(Math.max(0, Number(e.target.value)))}
                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground font-mono focus:outline-none focus:border-emerald-500 transition-colors"
-                    placeholder="Enter amount (e.g. 1000000)"
-                    min="1000000"
+                    placeholder="Enter amount (e.g. 100000)"
+                    min="100000"
                   />
-                  {calcAmount < 1000000 && (
-                    <p className="text-[10px] text-red-500 mt-1">Minimum investment amount is ₦1,000,000</p>
+                  {calcAmount < 100000 && (
+                    <p className="text-[10px] text-red-500 mt-1">Minimum investment amount is ₦100,000</p>
                   )}
                   <div className="flex flex-wrap gap-2 mt-3">
-                    {[1000000, 5000000, 10000000, 20000000, 50000000].map((amt) => (
+                    {[100000, 5000000, 10000000, 20000000, 50000000].map((amt) => (
                       <button 
                         key={amt}
                         onClick={() => setCalcAmount(amt)}
@@ -586,7 +586,7 @@ export default function LandingPage() {
             {[
               {
                 q: "What is the Azead Wealth Plan?",
-                a: "The Azead Wealth Plan is our unified investment product. It enables you to customize your investment amount starting from ₦1,000,000 NGN and lock it in for 1, 2, 3, or 5 years at a fixed interest rate of 25.00% APR."
+                a: "The Azead Wealth Plan is our unified investment product. It enables you to customize your investment amount starting from ₦100,000 NGN and lock it in for 1, 2, 3, or 5 years at a fixed interest rate of 25.00% APR."
               },
               {
                 q: "How does the live accrual ticker work?",

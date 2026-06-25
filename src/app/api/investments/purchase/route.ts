@@ -19,8 +19,8 @@ export async function POST(request: Request) {
     }
 
     const parsedAmount = Number(amount);
-    if (isNaN(parsedAmount) || parsedAmount < 1000000) {
-      return NextResponse.json({ error: 'Minimum investment amount is 1,000,000 NGN' }, { status: 400 });
+    if (isNaN(parsedAmount) || parsedAmount < 100000) {
+      return NextResponse.json({ error: 'Minimum investment amount is 100,000 NGN' }, { status: 400 });
     }
 
     const parsedDuration = parseInt(durationYears, 10);
