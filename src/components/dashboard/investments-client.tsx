@@ -52,7 +52,7 @@ export default function InvestmentsClient({
   const wealthPlanPkg = packages.find(p => p.id === 'cb92d8bc-c10b-4611-8583-bdd5a1cd0d68') || packages[0];
 
   // Calculator states
-  const [amountInput, setAmountInput] = useState<number>(1000000);
+  const [amountInput, setAmountInput] = useState<number>(100000);
   const [durationYears, setDurationYears] = useState<number>(1);
   const [inputError, setInputError] = useState<string | null>(null);
 
@@ -81,8 +81,8 @@ export default function InvestmentsClient({
   };
 
   const handleOpenConfirm = () => {
-    if (amountInput < 1000000) {
-      setInputError('Minimum investment amount is ₦1,000,000');
+    if (amountInput < 100000) {
+      setInputError('Minimum investment amount is ₦100,000');
       return;
     }
     setInputError(null);
@@ -220,20 +220,20 @@ export default function InvestmentsClient({
                   id="amount-input"
                   type="number"
                   name="amount"
-                  min="1000000"
+                  min="100000"
                   step="100000"
                   value={amountInput}
                   onChange={(e) => {
                     const val = Number(e.target.value);
                     setAmountInput(val);
-                    if (val < 1000000) {
-                      setInputError('Minimum investment amount is ₦1,000,000');
+                    if (val < 100000) {
+                      setInputError('Minimum investment amount is ₦100,000');
                     } else {
                       setInputError(null);
                     }
                   }}
                   className="block w-full rounded-xl border-border bg-secondary/30 py-3.5 pl-9 pr-4 text-foreground font-mono text-sm focus:border-emerald-500 focus:ring-emerald-500 placeholder-muted/50 transition-all border"
-                  placeholder="1,000,000"
+                  placeholder="100,000"
                 />
               </div>
               {inputError ? (
@@ -241,7 +241,7 @@ export default function InvestmentsClient({
                   <span>⚠</span> <span>{inputError}</span>
                 </p>
               ) : (
-                <p className="text-[10px] text-muted mt-1.5 font-sans">Enter an amount of ₦1,000,000 or more.</p>
+                <p className="text-[10px] text-muted mt-1.5 font-sans">Enter an amount of ₦100,000 or more.</p>
               )}
             </div>
 

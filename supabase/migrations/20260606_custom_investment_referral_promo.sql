@@ -34,8 +34,8 @@ BEGIN
     END IF;
 
     -- Strict validations
-    IF p_amount < 1000000.00 THEN
-        RAISE EXCEPTION 'Minimum investment amount is 1,000,000 NGN';
+    IF p_amount < 100000.00 THEN
+        RAISE EXCEPTION 'Minimum investment amount is 100,000 NGN';
     END IF;
 
     IF p_duration_years <= 0 THEN
